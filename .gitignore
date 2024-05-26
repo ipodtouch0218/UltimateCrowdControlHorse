@@ -1,0 +1,6 @@
+*.vs
+
+/gamemod/bin
+/gamemod/obj
+/webserver/node_modules
+/webserver/package-lock.json
