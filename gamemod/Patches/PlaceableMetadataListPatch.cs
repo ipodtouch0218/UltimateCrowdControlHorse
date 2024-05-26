@@ -7,7 +7,7 @@ namespace UltimateCrowdControlHorse.Patches {
         [HarmonyPatch("Awake")]
         [HarmonyPostfix]
         public static void Awake_Postfix() {
-            CrowdControlMod.Instance.FindPlaceables();
+            CrowdControlMod.Instance.FindPlaceablePrefabs();
         }
 
     }

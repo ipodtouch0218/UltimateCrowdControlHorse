@@ -2,5 +2,6 @@
 
 /gamemod/bin
 /gamemod/obj
+/gamemod/packages
 /webserver/node_modules
 /webserver/package-lock.json

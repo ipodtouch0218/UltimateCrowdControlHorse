@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UltimateCrowdControlHorse", "UltimateCrowdControlHorse.csproj", "{D87B699E-B5E9-492B-8B44-6728F9B273F9}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "UCCHWebserver", "..\webserver\UCCHWebserver.njsproj", "{286F1F1C-E36D-4417-9C4F-DED5DFEF7AA7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D87B699E-B5E9-492B-8B44-6728F9B273F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D87B699E-B5E9-492B-8B44-6728F9B273F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D87B699E-B5E9-492B-8B44-6728F9B273F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{286F1F1C-E36D-4417-9C4F-DED5DFEF7AA7}.Debug|Any CPU.ActiveCfg = Release|Any CPU
+		{286F1F1C-E36D-4417-9C4F-DED5DFEF7AA7}.Debug|Any CPU.Build.0 = Release|Any CPU
+		{286F1F1C-E36D-4417-9C4F-DED5DFEF7AA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{286F1F1C-E36D-4417-9C4F-DED5DFEF7AA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

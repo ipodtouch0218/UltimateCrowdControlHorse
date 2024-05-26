@@ -1,31 +1,103 @@
-<html lang="en">
+<html>
 	<head>
-		<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-		<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+		<title>Ultimate Crowd Control Horse</title>
+		<style>
+			.hidden {
+				display: none;
+			}
+		</style>
 
-		<title><%- title %></title>
+		<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 	</head>
 	<body>
+		<h1>Ultimate Crowd Control Horse</h1>
+		<div id="pageJoinRoom">
+			<label>Enter a Room ID to join:</label>
+			<input id="roomIdField" pattern="[A-Z]" />
+			<button id="roomIdSubmit">Submit</button>
+			<script>
+				const roomField = document.getElementById("roomIdField");
+				const submitButton = document.getElementById("roomIdSubmit");
 
-		<p>test</p>
-		<img id="levelImage" src="" />
-		<button id="testButton">Change Level</button>
+				submitButton.addEventListener("click", () => {
+					connectToRoom(roomField.value);
+				});
+			</script>
+		</div>
+
+		<div id="pageConnecting" class="hidden">
+			<p>Connecting to room...</p>
+		</div>
+
+		<div id="pageInRoomWaiting" class="hidden">
+			You are currently in the room <p id="roomName"></p>!<br>
+			Please wait for the game to start...
+		</div>
+
+		<div id="pageInGame" class="hidden">
+			Game in progress! Current objects on the map:
+			<p id="objectList"></p>
+		</div>
 
 		<script>
-			const socket = io();
-			socket.on("connect", () => {
-				console.log("Connected to the webserver");
-			});
+			var socket = null;
+			const pageJoinRoom = document.getElementById("pageJoinRoom");
+			const pageConnecting = document.getElementById("pageConnecting");
+			const pageInRoomWaiting = document.getElementById("pageInRoomWaiting");
+			const pageInGame = document.getElementById("pageInGame");
 
-			socket.on("setlevel", (name) => {
-				console.log("setlevel");
-				$("#levelImage").src = "/levels/" + name + ".png";
-			});
+			function hideAllPages() {
+				let pages = [pageJoinRoom, pageConnecting, pageInRoomWaiting];
+				for (const page of pages) {
+					page.classList.add("hidden");
+				}
+			}
 
-			$("#testButton").addEventListener("click", () => {
-				console.log("click me, daddy");
-				socket.emit("test");
-			});
+			function showPage(page) {
+				hideAllPages();
+				page.classList.remove("hidden");
+			}
+
+			function connectToRoom(room) {
+				showPage(pageConnecting);
+
+				socket = io("/web");
+				socket.on("connect", () => {
+					console.log("Connected to the webserver");
+					socket.emit("join", room);
+				});
+
+				socket.on("joinedroom", (roomState) => {
+					showPage(pageInRoomWaiting);
+					document.title = room + " | Ultimate Crowd Control Horse";
+					window.history.pushState(null, document.title, "/" + room);
+				});
+
+				socket.on("updatePlaceables", (objects) => {
+					showPage(pageInGame);
+					document.getElementById("objectList").innerHtml = objects;
+				});
+			}
+
+			window.onpopstate = function(event) {
+				console.log("pop! " + event);
+				if (socket != null) {
+					socket.disconnect();
+					socket = null;
+				}
+				if (event.state == null) {
+					// Return to the homepage...
+					showPage(pageJoinRoom);
+					document.title = "Ultimate Crowd Control Horse";
+				} else {
+					// Joining a room...
+					connectToRoom(event.state);
+				}
+			}
+
+			<% if (locals.room) { %>
+				connectToRoom("<%- locals.room %>");
+			<% } %>
 		</script>
 	</body>
 </html>
