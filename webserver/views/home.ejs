@@ -1,0 +1,31 @@
+<html lang="en">
+	<head>
+		<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+		<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+		<title><%- title %></title>
+	</head>
+	<body>
+
+		<p>test</p>
+		<img id="levelImage" src="" />
+		<button id="testButton">Change Level</button>
+
+		<script>
+			const socket = io();
+			socket.on("connect", () => {
+				console.log("Connected to the webserver");
+			});
+
+			socket.on("setlevel", (name) => {
+				console.log("setlevel");
+				$("#levelImage").src = "/levels/" + name + ".png";
+			});
+
+			$("#testButton").addEventListener("click", () => {
+				console.log("click me, daddy");
+				socket.emit("test");
+			});
+		</script>
+	</body>
+</html>
