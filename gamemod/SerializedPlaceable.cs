@@ -5,17 +5,21 @@ namespace UltimateCrowdControlHorse {
     [Serializable]
     public class SerializedPlaceable {
 
-        public Vector3 position;
-        public Quaternion rotation;
-        public Vector3 localScale;
+        public System.Numerics.Vector2 position;
+        public int rotation;
+        public System.Numerics.Vector2 localScale;
         public int id;
+        public string name;
 
         public static explicit operator SerializedPlaceable(Placeable placeable) {
+            var transform = placeable.transform;
+
             return new SerializedPlaceable() {
-                position = placeable.transform.position,
-                rotation = placeable.transform.rotation,
-                localScale = placeable.transform.localScale,
+                position = new System.Numerics.Vector2(transform.position.x, transform.position.y),
+                rotation = Mathf.RoundToInt(transform.rotation.eulerAngles.z),
+                localScale = new System.Numerics.Vector2(transform.localScale.x, transform.localScale.y),
                 id = placeable.ID,
+                name = placeable.Name,
             };
         }
     }

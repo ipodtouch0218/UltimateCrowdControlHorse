@@ -3,11 +3,9 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using SocketIOClient;
+using SocketIOClient.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using UltimateCrowdControlHorse.UnitySocketIO;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -37,45 +35,49 @@ namespace UltimateCrowdControlHorse {
             }
             log = BepInEx.Logging.Logger.CreateLogSource(modGUID);
 
-            webserverUrl = Config.Bind("General", "webserverUrl", "http://localhost:3000", "The webserver for the crowd control system");
+            webserverUrl = Config.Bind("General", "webserverUrl", "http://localhost:3000/", "The webserver for the crowd control system");
             socketLogging = Config.Bind("Debug", "socketLogging", true, "Logs all incoming/outgoing socket messages to the console");
 
             harmony.PatchAll();
-            log.LogInfo("Ultimate Crowd Control Horse - Initialized");
+            log.LogInfo("Ultimate Crowd Control Horse (UccH) Initialized!");
         }
 
         public void ConnectToWebserver(string roomId) {
-            socket = new SocketIOUnity(webserverUrl.Value, new SocketIOOptions() {
+            socket = new SocketIOUnity(webserverUrl.Value, new SocketIOOptions {
+                EIO = 4,
                 Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
             });
+            socket.JsonSerializer = new NewtonsoftJsonSerializer();
             socket.OnConnected += (object sender, EventArgs e) => {
-                log.LogInfo("socket.io connected!");
-                // why the fuck doesnt this work
+                log.LogInfo("Connected to the UccH webserver!");
+                SendSocketMessage("join", roomId);
             };
 
-            if (socketLogging.Value) {
-                socket.OnAnyInUnityThread((sender, e) => {
+            log.LogInfo("Attempting to connect to the UccH webserver...");
+            socket.Connect();
+
+            //if (socketLogging.Value) {
+                socket.OnAny((sender, e) => {
                     log.LogInfo($"[SOCKET] From {sender}: {e}");
                 });
-            }
-
-            socket.Connect();
-            log.LogInfo(UnityThread.instance);
+            //}
         }
 
-        public void SendSocketMessage(string message, params object[] objects) {
-            if (socket == null || !socket.Connected) {
+        public void DisconnectFromWebserver() {
+            if (socket == null) {
                 return;
             }
-            socket.Emit(message, objects);
+
+            socket.Disconnect();
+            socket = null;
         }
 
-        public Task UnityAsync(Task t) {
-            TaskScheduler taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
-            return Task.Factory.StartNew(async () => {
-                await t;
-            }, CancellationToken.None, TaskCreationOptions.None, taskScheduler);
+        public async void SendSocketMessage(string message, params object[] objects) {
+            if (socket == null) {
+                return;
+            }
+            log.LogInfo($"Sending socket message {message}...");
+            await socket.EmitAsync(message, objects);
         }
 
         public void FindPlaceablePrefabs() {

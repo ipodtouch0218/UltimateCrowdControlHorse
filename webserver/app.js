@@ -24,19 +24,21 @@ const gameSockets = socketServer.of("/game");
 const webSockets = socketServer.of("/web");
 
 socketServer.on("connection", (socket) => {
-    console.log("incoming GAME (no namespace) connection from " + socket.id);
-
-    socket.on("updatePlaceables", (placeables) => {
-        console.log("Placeable update! " + socket.room + ": " + placeables);
-        gameSockets.broadcast.emit("updatePlaceables", placeables);
-    })
-})
-
-gameSockets.on("connection", (socket) => {
     console.log("New incoming game connection from " + socket.id);
 
+    socket.on("join", (room) => {
+        socket.join(room);
+        socket.emit("joinedroom", room);
+        socket.room = room;
+    })
+
     socket.on("updatePlaceables", (placeables) => {
-        console.log("Placeable update! " + socket.room + ": " + placeables);
+        webSockets.to(socket.room).emit("updatePlaceables", placeables);
+    })
+
+    socket.on("changeLevel", (newLevelName) => {
+        webSockets.to(socket.room).emit("changeLevel", newLevelName);
+        socket.level = newLevelName;
     })
 });
 
@@ -44,9 +46,9 @@ webSockets.on("connection", (socket) => {
     console.log("New incoming webclient connection from " + socket.id);
 
     socket.on("join", (room) => {
-        console.log("Webclient " + socket.id + " joined room " + room)
         socket.join(room);
         socket.emit("joinedroom", room);
+        socket.room = room;
     })
 });
 

@@ -31,12 +31,9 @@
   <ItemGroup>
     <Content Include="app.js" />
     <Content Include="package.json" />
-    <Content Include="public\levels\waterfall.png" />
     <Content Include="views\home.ejs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="public\" />
-    <Folder Include="public\levels\" />
     <Folder Include="views\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />

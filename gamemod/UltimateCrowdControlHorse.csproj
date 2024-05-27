@@ -47,8 +47,11 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>D:\SteamLibrary\steamapps\common\Ultimate Chicken Horse\UltimateChickenHorse_Data\Managed\com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.7.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Bcl.AsyncInterfaces.9.0.0-preview.4.24266.19\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SocketIO.Core, Version=3.1.1.0, Culture=neutral, PublicKeyToken=c9a3629195a82104, processorArchitecture=MSIL">
       <HintPath>packages\SocketIO.Core.3.1.1\lib\netstandard2.0\SocketIO.Core.dll</HintPath>
@@ -58,9 +61,6 @@
     </Reference>
     <Reference Include="SocketIO.Serializer.SystemTextJson, Version=3.1.1.0, Culture=neutral, PublicKeyToken=c9a3629195a82104, processorArchitecture=MSIL">
       <HintPath>packages\SocketIO.Serializer.SystemTextJson.3.1.1\lib\netstandard2.0\SocketIO.Serializer.SystemTextJson.dll</HintPath>
-    </Reference>
-    <Reference Include="SocketIOClient, Version=3.1.1.0, Culture=neutral, PublicKeyToken=c9a3629195a82104, processorArchitecture=MSIL">
-      <HintPath>packages\SocketIOClient.3.1.1\lib\net462\SocketIOClient.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -74,14 +74,17 @@
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
+    <Reference Include="System.Reactive, Version=6.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>packages\System.Reactive.6.0.1\lib\net472\System.Reactive.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Encodings.Web, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Text.Encodings.Web.7.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
+    <Reference Include="System.Text.Encodings.Web, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Encodings.Web.9.0.0-preview.4.24266.19\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=7.0.0.3, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Text.Json.7.0.3\lib\net462\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Text.Json.9.0.0-preview.4.24266.19\lib\net462\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -89,6 +92,8 @@
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -101,21 +106,73 @@
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>D:\SteamLibrary\steamapps\common\Ultimate Chicken Horse\UltimateChickenHorse_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\SteamLibrary\steamapps\common\Ultimate Chicken Horse\UltimateChickenHorse_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\SteamLibrary\steamapps\common\Ultimate Chicken Horse\UltimateChickenHorse_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches\GamePlayerPatch.cs" />
     <Compile Include="Patches\LobbyManagerPatch.cs" />
+    <Compile Include="Patches\NetworkLobbyManagerPatch.cs" />
     <Compile Include="Patches\PlaceableMetadataListPatch.cs" />
     <Compile Include="CrowdControlMod.cs" />
     <Compile Include="Patches\PlaceablePatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerializedPlaceable.cs" />
-    <Compile Include="UnitySocketIO\SocketIOUnity.cs" />
-    <Compile Include="UnitySocketIO\UnityThread.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient.Newtonsoft.Json\ByteArrayConverter.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient.Newtonsoft.Json\NewtonsoftJsonSerializer.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\DisconnectReason.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\EventHandlers.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\JsonSerializer\ByteArrayConverter.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\JsonSerializer\IJsonSerializer.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\JsonSerializer\JsonSerializeResult.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\JsonSerializer\SystemTextJsonSerializer.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\BinaryMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\ClientAckMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\ClientBinaryAckMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\ConnectedMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\DisconnectedMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\ErrorMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\EventMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\IMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\MessageFactory.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\MessageType.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\OpenedMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\PingMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\PongMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\ServerAckMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Messages\ServerBinaryAckMessage.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\SocketIO.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\SocketIOOptions.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\SocketIOResponse.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\BaseTransport.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\Eio3HttpPollingHandler.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\Eio4HttpPollingHandler.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\HttpPollingHandler.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\HttpTransport.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\IClientWebSocket.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\IHttpPollingHandler.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\Payload.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\SystemNetWebSocketsClientWebSocket.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\TransportMessageType.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\TransportProtocol.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\Transport\WebSocketTransport.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\UriConverters\IUriConverter.cs" />
+    <Compile Include="SocketIOUnity\SocketIOClient\UriConverters\UriConverter.cs" />
+    <Compile Include="SocketIOUnity\SocketIOUnity.cs" />
+    <Compile Include="SocketIOUnity\UnityThread.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="SocketIOUnity\LICENSE" />
+    <None Include="SocketIOUnity\SocketIOClient\SocketIOClient.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

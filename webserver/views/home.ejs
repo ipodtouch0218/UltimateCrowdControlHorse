@@ -2,9 +2,9 @@
 	<head>
 		<title>Ultimate Crowd Control Horse</title>
 		<style>
-			.hidden {
-				display: none;
-			}
+.hidden {
+	display: none;
+}
 		</style>
 
 		<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
@@ -16,12 +16,12 @@
 			<input id="roomIdField" pattern="[A-Z]" />
 			<button id="roomIdSubmit">Submit</button>
 			<script>
-				const roomField = document.getElementById("roomIdField");
-				const submitButton = document.getElementById("roomIdSubmit");
+const roomField = document.getElementById("roomIdField");
+const submitButton = document.getElementById("roomIdSubmit");
 
-				submitButton.addEventListener("click", () => {
-					connectToRoom(roomField.value);
-				});
+submitButton.addEventListener("click", () => {
+	connectToRoom(roomField.value);
+});
 			</script>
 		</div>
 
@@ -37,67 +37,225 @@
 		<div id="pageInGame" class="hidden">
 			Game in progress! Current objects on the map:
 			<p id="objectList"></p>
+			<div id="placeables" style="position: relative;">
+				<img id="levelBackground" src="/levels/Rooftops.png" />
+			</div>
 		</div>
 
 		<script>
-			var socket = null;
-			const pageJoinRoom = document.getElementById("pageJoinRoom");
-			const pageConnecting = document.getElementById("pageConnecting");
-			const pageInRoomWaiting = document.getElementById("pageInRoomWaiting");
-			const pageInGame = document.getElementById("pageInGame");
+var socket = null;
+const pageJoinRoom = document.getElementById("pageJoinRoom");
+const pageConnecting = document.getElementById("pageConnecting");
+const pageInRoomWaiting = document.getElementById("pageInRoomWaiting");
+const pageInGame = document.getElementById("pageInGame");
 
-			function hideAllPages() {
-				let pages = [pageJoinRoom, pageConnecting, pageInRoomWaiting];
-				for (const page of pages) {
-					page.classList.add("hidden");
-				}
+const levelInfo = {
+	"Rooftops": {
+		"pixelOrigin": [61,138],
+		"coordOrigin": [-44, 18],
+		"scale": 1176/41,
+	},
+	"Waterfall": {
+		"pixelOrigin": [495,145],
+		"coordOrigin": [-20, 18],
+		"scale": 1213/39,
+	},
+	"Farm": {
+		"pixelOrigin": [461,227],
+		"coordOrigin": [-35, 11],
+		"scale": 1094/27,
+	},
+	"WindMill": {
+		"pixelOrigin": [787,85],
+		"coordOrigin": [-34, 30],
+		"scale": 1327/50,
+	},
+	"RicketyHouse": {
+		"pixelOrigin": [378,65],
+		"coordOrigin": [-40, 17],
+		"scale": 1301/34
+	},
+	"Iceberg": {
+		"pixelOrigin": [-5,433],
+		"coordOrigin": [-38, 22],
+		"scale": 2565/117
+	},
+	"Pyramid": {
+		"pixelOrigin": [315,436],
+		"coordOrigin": [-28, 3],
+		"scale": 2134/80,
+	},
+	"MetalPlant": {
+		"pixelOrigin": [657, -19],
+		"coordOrigin": [18, 34],
+		"scale": 1388/44,
+	},
+	"DanceParty": {
+		"pixelOrigin": [528,455],
+		"coordOrigin": [-29, 11],
+		"scale": 679/20,
+	}
+};
+const objectInfo = {
+	"Block": {
+		"offset": [0, 0],
+		"rotateOffset": false,
+	},
+	"Double Block": {
+		"offset": [-0.5, 0],
+		"rotateOffset": false,
+	},
+	"Triple Block": {
+		"offset": [-1, 0],
+		"rotateOffset": false,
+	},
+	"4-Block": {
+		"offset": [-1.5, 0],
+		"rotateOffset": false,
+	},
+	"5-Block": {
+		"offset": [-2, 0],
+		"rotateOffset": false,
+	},
+	"6-Block": {
+		"offset": [-2.5, 0],
+		"rotateOffset": false,
+	},
+	"Honey": {
+		"offset": [0, 0.75],
+		"rotateOffset": true,
+	},
+};
+
+var allPlaceables = [];
+var currentLevel = "Rooftops";
+
+function hideAllPages() {
+	let pages = [pageJoinRoom, pageConnecting, pageInRoomWaiting, pageInGame];
+	for (const page of pages) {
+		page.classList.add("hidden");
+	}
+}
+
+function showPage(page) {
+	hideAllPages();
+	page.classList.remove("hidden");
+}
+
+function connectToRoom(room) {
+	showPage(pageConnecting);
+
+	socket = io("/web");
+	socket.on("connect", () => {
+		console.log("Connected to the webserver");
+		socket.emit("join", room);
+	});
+
+	socket.on("joinedroom", (roomState) => {
+		showPage(pageInRoomWaiting);
+		document.title = room + " | Ultimate Crowd Control Horse";
+		window.history.pushState(null, document.title, "/" + room);
+	});
+
+	socket.on("updatePlaceables", (objects) => {
+		updatePlaceables(objects);
+		showPage(pageInGame);
+		document.getElementById("objectList").innerHTML = JSON.stringify(objects);
+	});
+
+	socket.on("changeLevel", (newLevelName) => {
+		currentLevel = newLevelName;
+		if (newLevelName == null) {
+			// back in the lobby
+			showPage(pageInRoomWaiting);
+		} else {
+			showPage(pageInGame);
+			console.log("new level name: " + newLevelName);
+			document.getElementById("levelBackground").src = "/levels/" + newLevelName + ".png";
+		}
+	});
+}
+
+function updatePlaceables(objects) {
+	toDelete = [...allPlaceables]
+	let parent = document.getElementById("placeables");
+
+	console.log("ALL:" + allPlaceables);
+	console.log("NEW OBJECTS:");
+	console.log(objects);
+
+	let level = levelInfo[currentLevel];
+
+	for (const obj of objects) {
+		let image = document.getElementById(obj.id);
+		if (image === undefined || image === null) {
+			// Create a new image for this
+			image = document.createElement("img");
+			image.id = obj.id;
+			image.src = "/placeables/" + obj.name + ".png";
+			parent.appendChild(image);
+			allPlaceables.push(obj.id);
+			console.log("adding a new object with ID " + obj.id);
+		} else {
+			console.log("object with ID " + obj.id + " already exists..");
+		}
+
+		const deg2Rad = Math.PI / 180;
+
+		let objInfo = objectInfo[obj.name];
+		let offset = [0, 0];
+		if (objInfo != undefined) {
+			let x = objInfo.offset[0];
+			let y = objInfo.offset[1];
+			if (objInfo.rotateOffset) {
+				offset[0] = Math.cos(-obj.rotation * deg2Rad) * x - Math.sin(-obj.rotation * deg2Rad) * y;
+				offset[1] = Math.sin(-obj.rotation * deg2Rad) * x + Math.cos(-obj.rotation * deg2Rad) * y;
+			} else {
+				offset[0] = x;
+				offset[1] = y;
 			}
+		}
 
-			function showPage(page) {
-				hideAllPages();
-				page.classList.remove("hidden");
-			}
+		// Set position
+		image.style.position = "absolute";
+		image.style.left = ((((obj.position.X - level.coordOrigin[0]) + offset[0]) * level.scale) + level.pixelOrigin[0]) + "px";
+		image.style.top = (((-(obj.position.Y - level.coordOrigin[1]) + offset[1]) * level.scale) + level.pixelOrigin[1]) + "px";
+		image.style.width = (image.naturalWidth / 70) * level.scale + "px";
+		image.style.height = (image.naturalHeight / 70 ) * level.scale + "px";
+		image.style.transform = "rotate(" + -obj.rotation + "deg)";
 
-			function connectToRoom(room) {
-				showPage(pageConnecting);
+		toDelete = toDelete.filter(e => e !== obj.id);
+	}
 
-				socket = io("/web");
-				socket.on("connect", () => {
-					console.log("Connected to the webserver");
-					socket.emit("join", room);
-				});
+	console.log("TO DELETE: " + toDelete);
 
-				socket.on("joinedroom", (roomState) => {
-					showPage(pageInRoomWaiting);
-					document.title = room + " | Ultimate Crowd Control Horse";
-					window.history.pushState(null, document.title, "/" + room);
-				});
+	// Delete these objects, they no longer exist
+	for (const id of toDelete) {
+		document.getElementById(id).remove();
+		allPlaceables = allPlaceables.filter(e => e !== id);
+		console.log("deleting object with id " + id);
+	}
+}
 
-				socket.on("updatePlaceables", (objects) => {
-					showPage(pageInGame);
-					document.getElementById("objectList").innerHtml = objects;
-				});
-			}
+window.onpopstate = function(event) {
+	console.log("pop! " + event);
+	if (socket != null) {
+		socket.disconnect();
+		socket = null;
+	}
+	if (event.state == null) {
+		// Return to the homepage...
+		showPage(pageJoinRoom);
+		document.title = "Ultimate Crowd Control Horse";
+	} else {
+		// Joining a room...
+		connectToRoom(event.state);
+	}
+}
 
-			window.onpopstate = function(event) {
-				console.log("pop! " + event);
-				if (socket != null) {
-					socket.disconnect();
-					socket = null;
-				}
-				if (event.state == null) {
-					// Return to the homepage...
-					showPage(pageJoinRoom);
-					document.title = "Ultimate Crowd Control Horse";
-				} else {
-					// Joining a room...
-					connectToRoom(event.state);
-				}
-			}
-
-			<% if (locals.room) { %>
-				connectToRoom("<%- locals.room %>");
-			<% } %>
+<% if (locals.room) { %>
+	connectToRoom("<%- locals.room %>");
+<% } %>
 		</script>
 	</body>
 </html>
