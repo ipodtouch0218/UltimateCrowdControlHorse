@@ -26,8 +26,9 @@ namespace UltimateCrowdControlHorse.Patches {
         }
 
         public static void UpdatePlaceableList() {
+
             List<SerializedPlaceable> allPlaceables = Placeable.AllPlaceables
-                .Where(p => p.Placed && !p.PickedUp && !string.IsNullOrWhiteSpace(p.Name))
+                .Where(p => p.Placed && !p.PickedUp && !string.IsNullOrWhiteSpace(p.Name) && p.Enabled)
                 .Select(p => (SerializedPlaceable) p) // THIS works... but .Cast<> doesnt. yeah.
                 .ToList();
 

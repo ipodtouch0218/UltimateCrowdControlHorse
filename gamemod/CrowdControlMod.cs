@@ -64,7 +64,7 @@ namespace UltimateCrowdControlHorse {
         }
 
         public void DisconnectFromWebserver() {
-            if (socket == null) {
+            if (socket == null || !socket.Connected) {
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace UltimateCrowdControlHorse {
         }
 
         public async void SendSocketMessage(string message, params object[] objects) {
-            if (socket == null) {
+            if (socket == null || !socket.Connected) {
                 return;
             }
             log.LogInfo($"Sending socket message {message}...");

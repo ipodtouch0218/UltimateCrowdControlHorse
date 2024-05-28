@@ -20,6 +20,8 @@ const socketServer = new Server(httpServer, {
     }
 });
 
+const gameData = {};
+
 const gameSockets = socketServer.of("/game");
 const webSockets = socketServer.of("/web");
 
@@ -30,15 +32,22 @@ socketServer.on("connection", (socket) => {
         socket.join(room);
         socket.emit("joinedroom", room);
         socket.room = room;
+        gameData[room] = {
+            "host": socket,
+            "placeables": [],
+            "level": null,
+        };
     })
 
     socket.on("updatePlaceables", (placeables) => {
         webSockets.to(socket.room).emit("updatePlaceables", placeables);
+        gameData[socket.room].placeables = placeables;
     })
 
     socket.on("changeLevel", (newLevelName) => {
         webSockets.to(socket.room).emit("changeLevel", newLevelName);
         socket.level = newLevelName;
+        gameData[socket.room].level = newLevelName;
     })
 });
 
@@ -49,6 +58,11 @@ webSockets.on("connection", (socket) => {
         socket.join(room);
         socket.emit("joinedroom", room);
         socket.room = room;
+
+        if (gameData[room] != undefined) {
+            socket.emit("changeLevel", gameData[room].level);
+            socket.emit("updatePlaceables", gameData[room].placeables);
+        }
     })
 });
 
