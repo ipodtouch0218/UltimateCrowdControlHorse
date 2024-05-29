@@ -23,6 +23,10 @@ namespace SocketIOClient {
 
         public int Count => _array.Count;
 
+        public T GetValue<T>(int index = 0) {
+            return _array[index].Value<T>();
+        }
+
         public override string ToString()
         {
             var builder = new StringBuilder();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UltimateCrowdControlHorse {
@@ -29,31 +30,40 @@ namespace UltimateCrowdControlHorse {
     [Serializable]
     public class SerializedPlaceable {
 
-        public System.Numerics.Vector2 position;
-        public int rotation;
-        public System.Numerics.Vector2 localScale;
+        public float[] pos;
+        public int rot;
+        public float[] scale;
         public int id;
         public string name;
         public object data;
 
-        public static explicit operator SerializedPlaceable(Placeable placeable) {
+        public SerializedPlaceable(Placeable placeable) {
             var transform = placeable.transform;
 
-            object data = null;
+            object objData = null;
             if (placeable is Teleporter t) {
-                data = new TeleporterData(t);
+                objData = new TeleporterData(t);
             } else if (placeable is FerrisWheel w) {
-                data = new FerrisWheelData(w);
+                objData = new FerrisWheelData(w);
             }
 
-            return new SerializedPlaceable() {
-                position = new System.Numerics.Vector2(transform.position.x, transform.position.y),
-                rotation = Mathf.RoundToInt(transform.rotation.eulerAngles.z),
-                localScale = new System.Numerics.Vector2(transform.localScale.x, transform.localScale.y),
-                id = placeable.ID,
-                name = placeable.Name,
-                data = data,
-            };
+            pos = new float[] { transform.position.x, transform.position.y };
+            rot = Mathf.RoundToInt(transform.rotation.eulerAngles.z);
+            scale = new float[] { transform.localScale.x, transform.localScale.y };
+            id = placeable.ID;
+            name = placeable.Name;
+            data = objData;
+
+            // Exceptions:
+            if (placeable.name.StartsWith("IcePiece")) {
+                name = "Ice";
+            }
+        }
+
+        private static List<string> invalidNames = new List<string>(){ "Double Ice", "Triple Ice", "Barbed Wire x3", "Barbed Wire x2", "Barbed Wire x1" };
+
+        public static bool IsValid(Placeable p) {
+            return (!string.IsNullOrEmpty(p.Name) || p.name.StartsWith("IcePiece")) && !invalidNames.Contains(p.Name) && p.Placed && !p.PickedUp && !p.isSetPiece && p.Enabled;
         }
     }
 }

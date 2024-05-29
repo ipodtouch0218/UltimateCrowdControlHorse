@@ -39,7 +39,7 @@ html, body {
 
 .embed {
     display: flex;
-    aspect-ratio: 16/9;
+    aspect-ratio: 2560/1409;
     object-fit: contain;
     overflow: hidden;
     margin: auto;
@@ -51,7 +51,7 @@ html, body {
     background-position: center;
 }
 
-@container resize-box (aspect-ratio >= 16/9) {
+@container resize-box (aspect-ratio >= 2560/1409) {
     .embed {
         width: auto;
         height: 100%;
@@ -66,3 +66,93 @@ html, body {
     width: 100%;
     object-fit: fill;
 }
+
+/* The sidepanel menu */
+.sidepanel {
+    height: 100%;
+    width: min(50%,500px);
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    transform: translateX(100%) translateX(-50px);
+    overflow-x: hidden;
+    transition: 0.5s;
+}
+
+.sidepanel .content {
+    width: calc(100% - 50px);
+    height: 100%;
+    background-color: #111;
+    margin-left: 50px;
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sidepanel .content .header {
+    text-align: center;
+    font-size: x-large;
+}
+
+.sidepanel .content .items {
+    flex: 1 1 auto;
+    overflow-x: scroll;
+}
+
+img {
+    pointer-events: none
+}
+
+
+/* Position and style the close button (top right corner) */
+.sidepanel .togglebutton {
+    position: absolute;
+    transform: translate(0, -50%);
+    top: 50%;
+    left: -50px;
+    width: 50px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+/* Style the button that is used to open the sidepanel */
+.openbtn {
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #111;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+}
+
+.openbtn:hover {
+    background-color: #444;
+}
+
+
+.item {
+    background-color: #666;
+    padding: 10px;
+    margin: 20px 20px 20px 20px;
+    display: grid;
+    grid-gap: 10px;
+    justify-content: center;
+}
+
+.item img {
+    max-width: 100%;
+    height: auto;
+}
+
+.item button {
+    max-width: 100%;
+    width: fit-content;
+    font-size: large;
+    align-self: center;
+    position: relative;
+    left: 50%;
+    transform: translate(-50%,0);
+}
+

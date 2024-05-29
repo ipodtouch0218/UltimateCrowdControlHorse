@@ -3,7 +3,6 @@
 	<head>
 		<title>Ultimate Crowd Control Horse</title>
 		<link rel="stylesheet" href="/home.css" />
-
 		<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 	</head>
 	<body>
@@ -31,12 +30,48 @@
 					Game in progress! Current objects on the map:
 					<div id="wrapper" class="embed">
 						<div id="placeables">
-
+						</div>
+					</div>
+					<div id="itemSidepanel" class="sidepanel">
+						<button id="sidepanelOpen" class="openbtn togglebutton" onclick="toggleItemPanel()">&#xAB;</button>
+						<div class="content">
+							<div class="header">
+								<p id="coin-count">1000 &#x1FA99;</p>
+							</div>
+							<div class="items">
+								<div id="itemTemplate" class="item hidden">
+									<img src="/placeables/Block.png" />
+									<button>10 &#x1FA99;</button>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+
+		<script>
+			const sidepanel = document.getElementById("itemSidepanel");
+			let open = false;
+
+			function toggleItemPanel() {
+				if (open) {
+					closeItemPanel();
+				} else {
+					openItemPanel();
+				}
+			}
+			function openItemPanel() {
+				sidepanel.style.transform = "translateX(0px)";
+				document.getElementById("sidepanelOpen").innerHTML = "&#xBB;";
+				open = true;
+			}
+			function closeItemPanel() {
+				sidepanel.style.transform = "translateX(100%) translateX(-50px)";
+				document.getElementById("sidepanelOpen").innerHTML = "&#xAB;";
+				open = false;
+			}
+		</script>
 
 		<script>instaJoinRoom="<%- locals.room %>"</script>
 		<script src="/logic.js"></script>

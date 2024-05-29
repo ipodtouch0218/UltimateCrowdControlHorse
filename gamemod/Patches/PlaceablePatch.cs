@@ -9,33 +9,46 @@ namespace UltimateCrowdControlHorse.Patches {
 
         [HarmonyPatch("Place", new Type[] { typeof(int), typeof(bool), typeof(bool) })]
         [HarmonyPostfix]
-        public static void Place_Postfix() {
-            UpdatePlaceableList();
+        public static void Place_Postfix(Placeable __instance) {
+            UpdatePlaceable(__instance);
         }
 
         [HarmonyPatch("PickUp")]
         [HarmonyPostfix]
-        public static void PickUp_Postfix() {
-            UpdatePlaceableList();
+        public static void PickUp_Postfix(Placeable __instance) {
+            CrowdControlMod.Instance.log.LogInfo(__instance.ID + " - Pickup()");
+            RemovePlaceable(__instance);
         }
 
         [HarmonyPatch("OnDestroy")]
         [HarmonyPostfix]
-        public static void OnDestroy_Postfix() {
-            UpdatePlaceableList();
+        public static void OnDestroy_Postfix(Placeable __instance) {
+            CrowdControlMod.Instance.log.LogInfo(__instance.ID + " - OnDestroy()");
+            RemovePlaceable(__instance);
         }
 
-        public static void UpdatePlaceableList() {
+        public static void UpdatePlaceable(Placeable p) {
+            if (!SerializedPlaceable.IsValid(p)) {
+                // Not eligable; not a real placed item (or is a map element)
+                CrowdControlMod.Instance.log.LogInfo($"{p.name} ({p.Name}) is not eligable {!p.Placed} || {p.PickedUp} || {p.isSetPiece} || {!p.Enabled}!");
+                return;
+            }
 
+            CrowdControlMod.Instance.pendingUpdates.Add(new SerializedPlaceable(p));
+        }
+
+        public static void RemovePlaceable(Placeable p) {
+            // Even if it's not eligable, remove it regardless, just in case. It's just a single integer, after all.
+            CrowdControlMod.Instance.pendingRemovals.Add(p.ID);
+        }
+
+        public static void UpdateAllPlaceables() {
             List<SerializedPlaceable> allPlaceables = Placeable.AllPlaceables
-                .Where(p => p.Placed && !p.PickedUp && !string.IsNullOrWhiteSpace(p.Name) && p.Enabled)
-                .Select(p => (SerializedPlaceable) p) // THIS works... but .Cast<> doesnt. yeah.
+                .Where(p => SerializedPlaceable.IsValid(p))
+                .Select(p => new SerializedPlaceable(p)) // THIS works... but .Cast<> doesnt. yeah.
                 .ToList();
 
-            var ccm = CrowdControlMod.Instance;
-            ccm.log.LogInfo($"New number of placeables: {allPlaceables.Count}");
-
-            ccm.SendSocketMessage("updatePlaceables", allPlaceables);
+            CrowdControlMod.Instance.SendSocketMessage("updateAllPlaceables", allPlaceables);
         }
     }
 }

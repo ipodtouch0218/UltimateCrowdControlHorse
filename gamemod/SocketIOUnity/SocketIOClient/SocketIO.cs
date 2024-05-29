@@ -10,8 +10,7 @@ using SocketIOClient.Messages;
 using SocketIOClient.Transport;
 using SocketIOClient.UriConverters;
 
-namespace SocketIOClient
-{
+namespace SocketIOClient {
     /// <summary>
     /// socket.io client class
     /// </summary>
@@ -176,10 +175,12 @@ namespace SocketIOClient
             if (Options.Transport == TransportProtocol.Polling)
             {
                 HttpPollingHandler handler;
-                if (Options.EIO == 3)
+                if (Options.EIO == 3) {
                     handler = new Eio3HttpPollingHandler(HttpClient);
-                else
+                } else {
                     handler = new Eio4HttpPollingHandler(HttpClient);
+                }
+
                 _transport = new HttpTransport(HttpClient, handler, Options, JsonSerializer);
             }
             else
@@ -226,10 +227,14 @@ namespace SocketIOClient
                     _realServerUri = UriConverter.GetServerUri(Options.Transport == TransportProtocol.WebSocket, ServerUri, Options.EIO, Options.Path, Options.Query);
                     try
                     {
-                        if (cct.IsCancellationRequested)
+                        if (cct.IsCancellationRequested) {
                             break;
-                        if (Attempts > 0)
+                        }
+
+                        if (Attempts > 0) {
                             OnReconnectAttempt?.Invoke(this, Attempts);
+                        }
+
                         var timeoutCts = new CancellationTokenSource(Options.ConnectionTimeout);
                         _transport.Subscribe(OnMessageReceived, OnErrorReceived);
                         await _transport.ConnectAsync(_realServerUri, timeoutCts.Token).ConfigureAwait(false);
@@ -545,7 +550,9 @@ namespace SocketIOClient
             }
         }
 
-        public OnAnyHandler[] ListenersAny() => _onAnyHandlers.ToArray();
+        public OnAnyHandler[] ListenersAny() {
+            return _onAnyHandlers.ToArray();
+        }
 
         internal async Task ClientAckAsync(int packetId, CancellationToken cancellationToken, params object[] data)
         {

@@ -124,6 +124,7 @@
     <Compile Include="Patches\PlaceableMetadataListPatch.cs" />
     <Compile Include="CrowdControlMod.cs" />
     <Compile Include="Patches\PlaceablePatch.cs" />
+    <Compile Include="Patches\RaftDayNightCyclePatch.cs" />
     <Compile Include="Patches\TeleporterProjectileSendPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerializedPlaceable.cs" />

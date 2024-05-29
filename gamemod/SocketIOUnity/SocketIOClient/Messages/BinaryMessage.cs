@@ -56,7 +56,7 @@ namespace SocketIOClient.Messages {
 
             string json = msg.Substring(index2);
 
-            var array = JObject.Parse(json).Values();
+            var array = JArray.Parse(json).Values();
             int i = -1;
             foreach (var item in array)
             {
