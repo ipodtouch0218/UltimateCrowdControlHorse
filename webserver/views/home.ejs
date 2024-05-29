@@ -22,14 +22,19 @@
 				</div>
 
 				<div id="pageInRoomWaiting" class="container hidden">
-					You are currently in the room <p id="roomName"></p>!<br>
-					Please wait for the game to start...
+					<p>You have connected to the room!<br>Please wait for a game to start...</p>
+					<p style="color: #282828">(Maybe take the time to watch the funny streamer...)</p>
 				</div>
 
 				<div id="pageInGame" class="container hidden">
-					Game in progress! Current objects on the map:
 					<div id="wrapper" class="embed">
 						<div id="placeables">
+							<div id="cannotPlaceItems" class="hidden">
+								<div class="warning">
+									<img src="/ui/CannotPlaceItems.png" />
+									<p id="cannotPlaceItemsTimer">You cannot place items right now! (30s)</p>
+								</div>
+							</div>
 						</div>
 					</div>
 					<div id="itemSidepanel" class="sidepanel">
@@ -39,14 +44,19 @@
 								<p id="coin-count">1000 &#x1FA99;</p>
 							</div>
 							<div class="items">
+								<p id="categoryTemplate" class="hidden">Category</p>
 								<div id="itemTemplate" class="item hidden">
 									<img src="/placeables/Block.png" />
 									<button>10 &#x1FA99;</button>
+									<img class="broken hidden" src="/ui/Broken.png" />
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
+			</div>
+			<div class="page-footer">
+				Made by <a href="https://github.com/ipodtouch0218">ipodtouch0218</a>, with <a id="reference" class="nocolor">love.</a><p id="secret"> (The normal kind, not L&Ouml;VE...)</p>
 			</div>
 		</div>
 

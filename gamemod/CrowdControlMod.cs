@@ -21,6 +21,14 @@ namespace UltimateCrowdControlHorse {
         //---Configuration
         private static ConfigEntry<string> webserverUrl;
         private static ConfigEntry<bool> socketLogging;
+        private static ConfigEntry<float> buildCooldown;
+        private static ConfigEntry<bool> canBuildInPlayMode;
+
+        private static ConfigEntry<int> minCoins;
+        private static ConfigEntry<int> totalCoins;
+        private static ConfigEntry<int> minPrice;
+        private static ConfigEntry<int> maxPrice;
+        private static ConfigEntry<bool> unlimitedCoins;
 
         //---Static
         public static CrowdControlMod Instance { get; private set; }
@@ -35,6 +43,7 @@ namespace UltimateCrowdControlHorse {
         private SocketIOUnity socket;
         private string currentLevel;
         private string roomId;
+        private bool inEditMode;
 
 
 
@@ -45,6 +54,16 @@ namespace UltimateCrowdControlHorse {
             log = BepInEx.Logging.Logger.CreateLogSource(modGUID);
 
             webserverUrl = Config.Bind("General", "webserverUrl", "http://localhost:3000/", "The webserver for the crowd control system");
+
+            buildCooldown = Config.Bind("Gameplay", "buildCooldown", 30f, "Length of the cooldown (in seconds) an individual chatter must wait before placing another item");
+            canBuildInPlayMode = Config.Bind("Gameplay", "canBuildInPlayMode", false, "Allows chatters to place items while in Play mode");
+
+            minCoins = Config.Bind("Gameplay", "minCoins", 100, "The minimum number of coins an individual chatter will be given. Technically, it raises the actual amount of coins above the total.");
+            totalCoins = Config.Bind("Gameplay", "totalCoins", 1000, "The total number of coins the chat splits in a single game.");
+            minPrice = Config.Bind("Gameplay", "minPrice", 25, "The minimum price an object can have (based on spawning chances)");
+            maxPrice = Config.Bind("Gameplay", "maxPrice", 100, "The maximum price an object can have (based on spawning chances)");
+            unlimitedCoins = Config.Bind("Gameplay", "unlimitedCoins", false, "Gives chatters unlimited coins to spend on placing items.");
+
             socketLogging = Config.Bind("Debug", "socketLogging", false, "Logs additional information about the websocket connection to the console");
 
             harmony.PatchAll();
@@ -77,6 +96,8 @@ namespace UltimateCrowdControlHorse {
                 log.LogInfo("[SOCKET] Connected to the UccH webserver");
                 SendSocketMessage("join", roomId);
                 SendSocketMessage("changeLevel", currentLevel);
+                SendSocketMessage("canPlaceItems", currentLevel != null && (inEditMode || canBuildInPlayMode.Value));
+                SendSocketMessage("setCoinSettings", minCoins.Value, totalCoins.Value, minPrice.Value, maxPrice.Value, unlimitedCoins.Value);
                 PlaceablePatch.UpdateAllPlaceables();
             };
             socket.OnDisconnected += (object sender, string str) => {
@@ -133,6 +154,16 @@ namespace UltimateCrowdControlHorse {
             SendSocketMessage("endGame");
         }
 
+        public void ToEditMode() {
+            inEditMode = true;
+            SendSocketMessage("canPlaceItems", inEditMode || canBuildInPlayMode.Value);
+        }
+
+        public void ToPlayMode() {
+            inEditMode = false;
+            SendSocketMessage("canPlaceItems", inEditMode || canBuildInPlayMode.Value);
+        }
+
         public void FindPlaceablePrefabs() {
             this.placeablePrefabs.Clear();
 
@@ -145,16 +176,34 @@ namespace UltimateCrowdControlHorse {
 
         public void PlacePieceFromNetwork(string client, string pieceName, Vector2 location, int rotation, bool flipX, bool flipY) {
 
+            if (!inEditMode && !canBuildInPlayMode.Value) {
+                SendSocketMessage("placeResult", client, false);
+                return;
+            }
+
             if (placeablePrefabs.Count <= 0) {
                 FindPlaceablePrefabs();
             }
 
+            if (pieceName == "Barbed Wire") {
+                pieceName = "Barbed Wire x1";
+            }
+
             Placeable piece = Instantiate(placeablePrefabs.First(p => p.Name == pieceName));
-            piece.GenerateIDOnPick(piece.ID, 1);
+            piece.GenerateIDOnPick(piece.ID, 0);
             piece.PickedUp = true;
             piece.GetComponent<Rigidbody2D>().isKinematic = false;
-            CheckColliding[] componentsInChildren = piece.gameObject.GetComponentsInChildren<CheckColliding>();
-            piece.SwitchColliderTo(ColliderModeEnum.PlacementPhase);
+            piece.EnablePlacement();
+
+            if (piece is FerrisWheel w) {
+                w.Clockwise = !flipX;
+                flipX = false;
+            } else if (piece is RotateBlock r) {
+                r.Clockwise = !flipX;
+                //flipX = false;
+            } else if (piece is Bomb b) {
+                b.Enable();
+            }
 
             piece.transform.position = location;
             piece.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Round(rotation / 90f) * 90f);
@@ -168,11 +217,10 @@ namespace UltimateCrowdControlHorse {
             }
 
             if (piece.CanPlace()) {
-
-                piece.Place(1);
+                piece.Place(0);
 
                 MsgPiecePlaced msgPiecePlaced = new MsgPiecePlaced() {
-                    PlayerNumber = 1,
+                    PlayerNumber = 0,
                     PiecePosition = piece.transform.position,
                     PieceScale = piece.transform.localScale,
                     PieceRotation = piece.transform.rotation,
@@ -181,7 +229,7 @@ namespace UltimateCrowdControlHorse {
                 };
                 NetworkManager.singleton.client.Send(NetMsgTypes.PiecePlaced, msgPiecePlaced);
 
-                SendSocketMessage("placeResult", client, true);
+                SendSocketMessage("placeResult", client, true, buildCooldown.Value);
             } else {
                 piece.DestroySelf(true, false, true);
                 SendSocketMessage("placeResult", client, false);

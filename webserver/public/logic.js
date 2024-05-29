@@ -164,7 +164,7 @@ const objectInfo = {
 		"offset": [-0.5,0],
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
-		"unevenOnRotate": [true, true],
+		"unevenOnRotate": [1, 1],
 	},
 	"Triple Block": {
 		"offset": [-1,0],
@@ -175,7 +175,7 @@ const objectInfo = {
 		"offset": [-1.5,0],
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
-		"unevenOnRotate": [true, true],
+		"unevenOnRotate": [1, 1],
 	},
 	"5-Block": {
 		"offset": [-2,0],
@@ -186,12 +186,14 @@ const objectInfo = {
 		"offset": [-2.5,0],
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
-		"unevenOnRotate": [true, true],
+		"unevenOnRotate": [1, 1],
 	},
 	"Honey": {
-		"offset": [0,0.1],
-		"rotateOffset": [0, 0.75],
+		"offset": [0, -1],
+		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
+		"shopCrop": [130, 0],
+		"broken": true,
 	},
 	"Stairs": {
 		"offset": [-1.5,-1.5],
@@ -218,8 +220,9 @@ const objectInfo = {
 		"rotateOffset": [0, 0],
 	},
 	"Stopwatch": {
-		"offset": [0,-0.35],
+		"offset": [0,-0.5],
 		"rotateOffset": [0, 0],
+		"shopCrop": [10, 30],
 	},
 	"Scaffold": {
 		"offset": [0,-2],
@@ -232,18 +235,23 @@ const objectInfo = {
 		"scrollAction": "rotate",
 	},
 	"Barbed Wire": {
-		"offset": [0,0],
-		"rotateOffset": [0, 0.5],
+		"offset": [0, -1],
+		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
+		"shopCrop": [90, 50],
+		"broken": true,
 	},
 	"Ice": {
-		"offset": [0,0],
-		"rotateOffset": [0, 0.8],
+		"offset": [0, -1],
+		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
+		"shopCrop": [130, 0],
+		"broken": true,
 	},
 	"Spikey Ball": {
-		"offset": [-0.2,-0.3],
+		"offset": [-1,-1],
 		"rotateOffset": [0, 0],
+		"shopCrop": [55, 55],
 	},
 	"Linear Saw": {
 		"offset": [-2,0],
@@ -261,14 +269,16 @@ const objectInfo = {
 		"rotateOffset": [0, 0],
 	},
 	"SwingingAxe": {
-		"offset": [-6,-0.5],
-		"rotateOffset": [0, 0],
+		"offset": [-3,-1],
+		"rotateOffset": [3.1, 0],
+		"flipRotation": true,
 		"scrollAction": "flipX",
 	},
 	"PunchingBlock": {
-		"offset": [-0.95,-0.25],
-		"rotateOffset": [0.8, 0],
+		"offset": [-2,-1],
+		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
+		"shopCrop": [60, 60],
 	},
 	"Flamethrower": {
 		"offset": [-1,-1],
@@ -281,34 +291,45 @@ const objectInfo = {
 		"scrollAction": "rotate",
 	},
 	"Spinning Death": {
-		"offset": [0,-1.25],
-		"rotateOffset": [0, -1],
+		"offset": [-1,-2],
+		"rotateOffset": [0,-1],
+		"scrollAction": "rotate",
+		"shopCrop": [60, 70],
+	},
+	"CrumbleBlockA": {
+		"offset": [0, 0],
+		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
 	},
 	"CrumbleBlockP": {
-		"offset": [-1,-0.5],
-		"rotateOffset": [1, 1.5],
+		"offset": [-1,-1],
+		"rotateOffset": [1, 1],
 		"scrollAction": "rotate",
+		"shopCrop": [70, 0],
 	},
 	"CrumbleBlockI": {
-		"offset": [-1,-0.5],
-		"rotateOffset": [1, 0.5],
+		"offset": [-1,-1],
+		"rotateOffset": [1, 0],
 		"scrollAction": "rotate",
+		"shopCrop": [70, 0],
 	},
 	"Cannon": {
-		"offset": [-0.5,-1],
+		"offset": [-1.5,-1.5],
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
+		"shopCrop": [67, 58],
 	},
 	"Blackhole": {
-		"offset": [-1.25,-1.5],
-		"rotateOffset": [0, 0],
+		"offset": [-2, -2],
+		"rotateOffset": [0,0],
 		"scrollAction": "rotate",
+		"shopCrop": [57,73],
 	},
 	"Teleporter": {
-		"offset": [0,-0.5],
-		"rotateOffset": [0, -0.5],
+		"offset": [-1,-1],
+		"rotateOffset": [0, -1],
 		"scrollAction": "rotate",
+		"shopCrop": [70,0],
 	},
 	"Ball Launcher": {
 		"offset": [0,-0.2],
@@ -322,68 +343,73 @@ const objectInfo = {
 		"scrollShiftAction": "rotate",
 	},
 	"HockeyShooter": {
-		"offset": [-1.1,-1],
-		"rotateOffset": [0, -0.4],
+		"offset": [-2,-1],
+		"rotateOffset": [0, -0.5],
 		"scrollAction": "flipX",
 		"scrollShiftAction": "rotate",
 	},
 	"Crossbow": {
-		"offset": [-0.6,-0.5],
+		"offset": [-1,-0.5],
 		"rotateOffset": [0, 0],
+		"unevenOnRotate": [1, 1],
 		"scrollAction": "rotate",
 	},
 	"Jetpack Dispenser": {
-		"offset": [-1,0],
-		"rotateOffset": [0,-0.75],
-		"overrides": {
-			90: [0.6,0.7],
-			180: [0,-1.3],
-			270: [-0.6,-0.7],
-		},
+		"offset": [-1,-1],
+		"rotateOffset": [0,-0.5],
 		"scrollAction": "flipX",
 		"scrollShiftAction": "rotate",
+		"shopCrop": [55, 0],
 	},
 	"PunchingPlant": {
-		"offset": [-0.8,-1.35],
-		"rotateOffset": [0, -1],
+		"offset": [-1,-2],
+		"rotateOffset": [0, -2],
 		"scrollAction": "rotate",
 		"scrollShiftAction": "flipX",
+		"shopCrop": [130, 0],
 	},
 	"Jetpack": {
-		"offset": [0,-0.45],
+		"offset": [0,-1],
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
+		"shopCrop": [55, 55],
 	},
 	"Spinning Tire": {
 		"offset": [-0.5,-0.5],
 		"rotateOffset": [0, 0],
 		"scrollAction": "flipX",
+		"scrollShiftAction": "rotate",
 	},
 	"UpBlower": {
-		"offset": [-1,-0.2],
+		"offset": [-1,-1],
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
+		"shopCrop": [48, 48],
 	},
 	"PaperAirplaneShooter": {
 		"offset": [-1.25,-2],
 		"rotateOffset": [0, 1],
 		"scrollAction": "flipX",
 		"scrollShiftAction": "rotate",
+		"shopCrop": [15, 0],
 	},
 	"SmoothRotate": {
-		"offset": [0,-0.1],
+		"offset": [-1, 0],
 		"rotateOffset": [0, 0],
 		"scrollAction": "flipX",
 	},
 	"Spring": {
-		"offset": [-0.5,-0.3],
-		"rotateOffset": [0, -0.25],
+		"offset": [-0.5,-1],
+		"rotateOffset": [0,-1],
 		"scrollAction": "rotate",
+		"shopCrop": [100, 0],
 	},
 	"Fire Hydrant": {
-		"offset": [0,-0.4],
-		"rotateOffset": [0, 0.2],
+		"offset": [0, -0.5],
+		"rotateOffset": [0, 0],
+		"unevenOnRotate": [1, -1],
 		"scrollAction": "rotate",
+		"shopCrop": [30, 0],
 	},
 	"One Way Door": {
 		"offset": [-0.6,-1.7],
@@ -426,8 +452,9 @@ const objectInfo = {
 		"scrollShiftAction": "flipX",
 	},
 	"Floating Platform": {
-		"offset": [0,0],
+		"offset": [-0.5, 0],
 		"rotateOffset": [0, 0],
+		"unevenOnRotate": [1, 1],
 		"scrollAction": "rotate",
 		"scrollShiftAction": "flipX",
 	},
@@ -436,8 +463,90 @@ const objectInfo = {
 		"rotateOffset": [0, 0],
 		"customImage": "FerrisWheelWithPlatforms",
 		"scrollAction": "flipX",
-	}
+		"broken": true,
+	},
+	"Bomb Mini": {
+		"offset": [-0, -0],
+		"rotateOffset": [0, 0],
+	},
+	"3x3 Bomb": {
+		"offset": [-1,-1],
+		"rotateOffset": [0,0],
+	},
+	"Bomb Mega": {
+		"offset": [-2, -2],
+		"rotateOffset": [0, 0],
+	},
 };
+const shopCategories = {
+	"Platforms": [
+		"Block",
+		"Double Block",
+		"Triple Block",
+		"4-Block",
+		"5-Block",
+		"6-Block",
+		"Stairs",
+		"Hay Bale",
+		"Barrel",
+		"L-Girder",
+		"Scaffold",
+		"CrumbleBlockA",
+		"CrumbleBlockP",
+		"CrumbleBlockI",
+	],
+	"Tools and Goodies": [
+		"Honey",
+		"Coin",
+		"Stopwatch",
+		"Bomb Mini",
+		"3x3 Bomb",
+		"Bomb Mega",
+	],
+	"Hazards": [
+		"Ice",
+		"Barbed Wire",
+		"PressureTriggerSpikes",
+		"Spikey Ball",
+
+		"Linear Saw",
+		"SwingingAxe",
+		"PunchingBlock",
+		"Beehive",
+		"Trap Door",
+		"Spinning Death",
+		"Flamethrower",
+	],
+	"Sciency Stuff": [
+		"Blackhole",
+		"Teleporter",
+		"Jetpack",
+		"Jetpack Dispenser",
+		"PunchingPlant",
+	],
+	"Shooty": [
+		"Ball Launcher",
+		"HockeyShooter",
+		"Crossbow",
+		"Cannon",
+	],
+	"Moving Things": [
+		"PaperAirplaneShooter",
+		"Spring",
+		"Fire Hydrant",
+		"UpBlower",
+		"Floating Platform",
+		"One Way Door",
+		"Automatic Door",
+		"SmoothRotate",
+		"Spinning Tire",
+		"Treadmill",
+		"FerrisWheel",
+		"DiagonalMover",
+		"LongDistanceMove",
+		"Horizontal Moving Platform",
+	],
+}
 
 var allPlaceables = [];
 var currentLevel = "Rooftops";
@@ -460,6 +569,7 @@ function buyItem(obj) {
 	toggleItemPanel();
 	endItemPlacement();
 
+	const level = levelInfo[currentLevel];
 	const parent = document.getElementById("placeables");
 	image = document.createElement("img");
 	let imageUrl = obj;
@@ -468,11 +578,13 @@ function buyItem(obj) {
 	}
 	image.src = "/placeables/" + imageUrl + ".png";
 	image.style.position = "absolute";
+	if (level.customImageFunction) {
+		level.customImageFunction(image);
+	}
 	parent.appendChild(image);
 
 	const screenScaleX = 100 / 2560;
 	const screenScaleY = 100 / 1409;
-	const level = levelInfo[currentLevel];
 	function setSize() {
 		image.style.width = (((image.naturalWidth / 70) * level.scale) * screenScaleX) + "%";
 		image.style.height = (((image.naturalHeight / 70) * level.scale) * screenScaleY) + "%";
@@ -488,10 +600,10 @@ function buyItem(obj) {
 	itemPlacement = {
 		"obj": obj,
 		"image": image,
+		"coords": [0,0],
 		"rotation": 0,
 		"scale": [1,1],
 	};
-	// socket.emit("placeItem", obj, -20, 5, 0, false, false);
 }
 
 
@@ -545,32 +657,32 @@ function updateItemPlacement() {
 	let gridStartPercentageX = level.pixelOrigin[0] / 2560;
 	let gridStartPercentageY = level.pixelOrigin[1] / 1409;
 
-	x = Math.round((x - gridStartPercentageX) * 2560 / level.scale) / 2560 * level.scale + gridStartPercentageX;
-	y = Math.round((y - gridStartPercentageY) * 1409 / level.scale) / 1409 * level.scale + gridStartPercentageY;
+	let snapX = Math.round((x - gridStartPercentageX) * 2560 / level.scale) / 2560 * level.scale + gridStartPercentageX;
+	let snapY = Math.round((y - gridStartPercentageY) * 1409 / level.scale) / 1409 * level.scale + gridStartPercentageY;
+
 
 	if (objInfo && objInfo.unevenOnRotate && (rot == 90 || rot == 270)) {
-		if (objInfo.unevenOnRotate[0]) {
-			x -= 0.5 * level.scale / 2560;
-		}
-		if (objInfo.unevenOnRotate[1]) {
-			y += 0.5 * level.scale / 1409;
-		}
+		snapX -= objInfo.unevenOnRotate[0] * 0.5 * level.scale / 2560;
+		snapY -= objInfo.unevenOnRotate[1] * 0.5 * level.scale / 1409;
 	}
 
+	let visualX = snapX + (offset[0] % 0.5) * level.scale / 2560;
+	let visualY = snapY + (offset[1] % 0.5) * level.scale / 1409;
+
+
 	itemPlacement.coords = [
-		(x * 2560 - level.pixelOrigin[0]) / level.scale + level.coordOrigin[0],
-		(y * 1409 - level.pixelOrigin[1]) / level.scale + level.coordOrigin[1]
+		(visualX * 2560 - level.pixelOrigin[0]) / level.scale + level.coordOrigin[0] - offset[0],
+		-(visualY * 1409 - level.pixelOrigin[1]) / level.scale + level.coordOrigin[1] + offset[1],
 	];
 	itemPlacement.coords = [
 		Math.round(itemPlacement.coords[0] * 2) / 2,
 		Math.round(itemPlacement.coords[1] * 2) / 2,
 	];
-	console.log(itemPlacement.coords);
 
 	// Set position
 	image.style.position = "absolute";
-	itemPlacement.image.style.left = x * 100 + "%";
-	itemPlacement.image.style.top = y * 100 + "%";
+	itemPlacement.image.style.left = visualX * 100 + "%";
+	itemPlacement.image.style.top = visualY * 100 + "%";
 	image.style.transform = "rotate(" + -rot + "deg) scale(" + scale[0] + "," + scale[1] + ")";
 }
 
@@ -628,31 +740,59 @@ bg.onclick = () => {
 	}
 
 	itemPlacement.submitted = true;
+
+	socket.emit("placeItem", itemPlacement.obj, itemPlacement.coords[0], itemPlacement.coords[1],
+		itemPlacement.rotation, itemPlacement.scale[0] < 0, itemPlacement.scale[1] < 0);
 }
 
+const categoryTemplate = document.getElementById("categoryTemplate");
 const template = document.getElementById("itemTemplate");
-for (const obj of Object.keys(objectInfo)) {
-	let newItem = template.cloneNode(true);
-	newItem.id = "item-" + obj;
-	newItem.classList.remove("hidden");
-	template.parentElement.appendChild(newItem);
+for (const category of Object.keys(shopCategories)) {
 
-	let image = obj;
-	if (objectInfo[obj].customImage) {
-		image = objectInfo[obj].customImage;
+	let newCategory = categoryTemplate.cloneNode(true);
+	newCategory.id = "category-" + category;
+	newCategory.classList.remove("hidden");
+	newCategory.innerHTML = category;
+	template.parentElement.appendChild(newCategory);
+
+	for (const obj of shopCategories[category]) {
+		let info = objectInfo[obj];
+		let newItem = template.cloneNode(true);
+		newItem.id = "item-" + obj;
+		newItem.classList.remove("hidden");
+		template.parentElement.appendChild(newItem);
+
+		let imageName = obj;
+		if (info.customImage) {
+			imageName = info.customImage;
+		}
+
+		let img = newItem.childNodes[1];
+		let btn = newItem.childNodes[3];
+		if (info.broken) {
+			newItem.childNodes[5].classList.remove("hidden");
+			btn.disabled = true;
+		}
+		img.src = "/placeables/" + imageName + ".png";
+
+		if (info.shopCrop) {
+			img.style.marginTop = -info.shopCrop[0] + "px";
+			img.style.marginBottom = -info.shopCrop[1] + "px";
+		}
+
+		btn.addEventListener("click", () => {
+			if (!objectInfo[obj].broken) {
+				buyItem(obj);
+			}
+		});
+		btn.innerHTML = getItemPrice(obj) + " &#x1FA99;";
+
+		itemShops.push({
+			"item": obj,
+			"image": img,
+			"button": btn,
+		});
 	}
-
-	newItem.childNodes[1].src = "/placeables/" + image + ".png";
-	newItem.childNodes[3].addEventListener("click", () => {
-		buyItem(obj);
-	});
-	newItem.childNodes[3].innerHTML = getItemPrice(obj) + " &#x1FA99;";
-
-	itemShops.push({
-		"item": obj,
-		"image": newItem.childNodes[1],
-		"button": newItem.childNodes[3],
-	});
 }
 
 function getItemPrice(obj) {
@@ -662,9 +802,13 @@ function getItemPrice(obj) {
 function setCoins(newCoins) {
 	coins = newCoins;
 	for (const shop of itemShops) {
-		shop.button.disabled = coins < getItemPrice(shop.item);
+		shop.button.disabled = shop.broken || coins < getItemPrice(shop.item);
 	}
-	coinCount.innerHTML = coins + " &#x1FA99;";
+	if (coins < 0) {
+		coinCount.innerText = "&infin; &#x1FA99;";
+	} else {
+		coinCount.innerText = coins + " &#x1FA99;";
+	}
 }
 
 setCoins(0);
@@ -679,6 +823,31 @@ function hideAllPages() {
 function showPage(page) {
 	hideAllPages();
 	page.classList.remove("hidden");
+}
+
+let canPlaceItems = false;
+let cooldownTimer = 0;
+let countdownInterval = null;
+
+function updateCantBuildText() {
+
+	const overlay = document.getElementById("cannotPlaceItems");
+	const warning = document.getElementById("cannotPlaceItemsTimer");
+
+	if (canPlaceItems && new Date().getTime() >= cooldownTimer) {
+		overlay.classList.add("hidden");
+
+		if (countdownInterval) {
+			clearInterval(countdownInterval);
+		}
+		return;
+	}
+
+	overlay.classList.remove("hidden");
+	warning.innerText = "You cannot place items right now!";
+	if (new Date().getTime() < cooldownTimer) {
+		warning.innerText += " (" + Math.floor((cooldownTimer - new Date().getTime()) / 1000) + "s)";
+	}
 }
 
 function connectToRoom(room) {
@@ -697,16 +866,12 @@ function connectToRoom(room) {
 	});
 
 	socket.on("updatePlaceables", (objects) => {
-		console.log("updatePlaceables");
-		console.log(objects);
 		for (const obj of objects) {
 			updatePlaceable(obj);
 		}
 	});
 
 	socket.on("removePlaceables", (ids) => {
-		console.log("removePlaceables");
-		console.log(ids);
 		let objectsToRemove = allPlaceables.filter(e => ids.includes(e.id));
 		for (const obj of objectsToRemove) {
 			removePlaceable(obj);
@@ -732,6 +897,28 @@ function connectToRoom(room) {
 	socket.on("setCoins", (newCoins) => {
 		setCoins(newCoins);
 	});
+
+	socket.on("placeResult", (placed) => {
+		if (placed) {
+			endItemPlacement();
+		} else if (itemPlacement) {
+			itemPlacement.submitted = false;
+		}
+	});
+
+	socket.on("canPlaceItems", (value) => {
+		canPlaceItems = value;
+		updateCantBuildText();
+	});
+
+	socket.on("setCooldown", (cooldownEnd) => {
+		cooldownTimer = cooldownEnd;
+		updateCantBuildText();
+		if (countdownInterval) {
+			clearInterval(countdownInterval);
+		}
+		countdownInterval = setInterval(updateCantBuildText, 1000);
+	});
 }
 
 function updatePlaceable(serializedObj) {
@@ -750,6 +937,7 @@ function updatePlaceable(serializedObj) {
 
 	if (placeable) {
 		image = placeable.image;
+		placeable.data = serializedObj.data;
 	} else {
 		// Create a new image for this
 		image = document.createElement("img");
@@ -827,9 +1015,6 @@ function updatePlaceable(serializedObj) {
 				teleporterImage.src = "/placeables/Teleporter-Effect.png";
 				parent.appendChild(teleporterImage);
 				placeable.teleporterEffect = teleporterImage;
-
-				const index = allPlaceables.map(e => e.id).indexOf(placeable.id);
-				allPlaceables[index] = placeable;
 			}
 
 			teleporterImage.style.position = image.style.position;
@@ -849,9 +1034,6 @@ function updatePlaceable(serializedObj) {
 			if (placeable.teleporterEffect) {
 				placeable.teleporterEffect.remove();
 				placeable.teleporterEffect = null;
-
-				const index = allPlaceables.map(e => e.id).indexOf(placeable.id);
-				allPlaceables[index] = placeable;
 			}
 		}
 
@@ -895,10 +1077,10 @@ function updatePlaceable(serializedObj) {
 				}
 			}
 		}
-
-		const index = allPlaceables.map(e => e.id).indexOf(placeable.id);
-		allPlaceables[index] = placeable;
 	}
+
+	const index = allPlaceables.map(e => e.id).indexOf(placeable.id);
+	allPlaceables[index] = placeable;
 }
 
 function removePlaceable(obj) {

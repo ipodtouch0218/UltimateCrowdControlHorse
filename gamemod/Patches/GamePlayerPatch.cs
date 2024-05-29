@@ -16,10 +16,16 @@ namespace UltimateCrowdControlHorse.Patches {
             CrowdControlMod.Instance.EndGame();
         }
 
+        [HarmonyPatch("ToPlaceMode")]
+        [HarmonyPostfix]
+        public static void ToPlaceMode_Postfix() {
+            CrowdControlMod.Instance.ToEditMode();
+        }
+
         [HarmonyPatch("ToPlayMode")]
         [HarmonyPostfix]
-        public static void ToPlayMode_Postfix(GameControl __instance) {
-
+        public static void ToPlayMode_Postfix() {
+            CrowdControlMod.Instance.ToPlayMode();
         }
     }
 }
