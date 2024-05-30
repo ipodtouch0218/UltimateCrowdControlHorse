@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 const app = express();
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static("/public"));
 app.get("/", (req, res) => res.render("home"));
 app.use("/:room", (req, res) => res.render("home", { room: req.params.room }));
 
