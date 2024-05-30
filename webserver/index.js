@@ -1,3 +1,4 @@
+var path = require('path');
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -6,7 +7,7 @@ const { Server } = require("socket.io");
 const app = express();
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
-app.use(express.static("/public"));
+app.use(express.static(path.join(__dirname, 'public')));
 app.get("/", (req, res) => res.render("home"));
 app.use("/:room", (req, res) => res.render("home", { room: req.params.room }));
 
