@@ -12,7 +12,8 @@
     <ProjectGuid>286f1f1c-e36d-4417-9c4f-ded5dfef7aa7</ProjectGuid>
     <ProjectHome>
     </ProjectHome>
-    <StartupFile>app.js</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -29,7 +30,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="app.js" />
+    <Content Include="index.js" />
     <Content Include="package.json" />
     <Content Include="public\levels\DanceParty.png" />
     <Content Include="public\levels\Farm.png" />
