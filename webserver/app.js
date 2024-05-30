@@ -11,7 +11,7 @@ app.get("/", (req, res) => res.render("home"));
 app.use("/:room", (req, res) => res.render("home", { room: req.params.room }));
 
 const httpServer = http.createServer(app);
-const handleListen = () => console.log("listening on localhost:3000");
+const handleListen = () => console.log("Started; listening on :" + port);
 
 // Sockets
 const socketServer = new Server(httpServer, {
@@ -218,4 +218,5 @@ webSockets.on("connection", (socket) => {
 
 
 // Initialization
-httpServer.listen(3000, handleListen);
+let port = process.env.PORT || 3000;
+httpServer.listen(port, handleListen);
