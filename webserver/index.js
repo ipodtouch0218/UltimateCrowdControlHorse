@@ -184,7 +184,7 @@ webSockets.on("connection", (socket) => {
         socket.emit("canPlaceItems", gameData[socket.room].canPlaceItems);
 
         let ourRoomDataIndex = data.clients.findIndex(e => e.ip == socket.ip);
-        if (ourRoomDataIndex == -1) {
+        if (ourRoomDataIndex < 0) {
             ourRoomData = {
                 "ip": socket.handshake.ip,
                 "ids": [socket.id],
@@ -193,9 +193,8 @@ webSockets.on("connection", (socket) => {
             };
             gameData[room].clients.push(ourRoomData);
         } else {
-            ourRoomData.ids.push(socket.id);
-            ourRoomData.sockets.push(socket);
-            gameData[room].clients[ourRoomDataIndex] = ourRoomData;
+            gameData[room].clients[ourRoomDataIndex].ids.push(socket.id);
+            gameData[room].clients[ourRoomDataIndex].sockets.push(socket);
         }
 
         socket.emit("setCoins", ourRoomData.coins)
