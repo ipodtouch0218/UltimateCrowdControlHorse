@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using GameEvent;
 using HarmonyLib;
 using SocketIOClient;
 using SocketIOClient.Newtonsoft.Json;
@@ -57,7 +56,7 @@ namespace UltimateCrowdControlHorse {
             }
             log = BepInEx.Logging.Logger.CreateLogSource(modGUID);
 
-            webserverUrl = Config.Bind("General", "webserverUrl", "http://localhost:3000/", "The webserver for the crowd control system");
+            webserverUrl = Config.Bind("General", "webserverUrl", "https://ucch.azurewebsites.net", "The webserver for the crowd control system");
 
             buildCooldown = Config.Bind("Gameplay", "buildCooldown", 30f, "Length of the cooldown (in seconds) an individual chatter must wait before placing another item");
             canBuildInPlayMode = Config.Bind("Gameplay", "canBuildInPlayMode", false, "Allows chatters to place items while in Play mode");
@@ -189,17 +188,87 @@ namespace UltimateCrowdControlHorse {
                 FindPlaceablePrefabs();
             }
 
+            Placeable piece = SpawnPlaceable(pieceName, location, rotation, flipX, flipY);
+
+            if (piece.CanPlace()) {
+
+                piece.Place(0);
+
+                SpawnPlaceableEvent msgPlaceableSpawned = new SpawnPlaceableEvent() {
+                    PrefabName = pieceName,
+                    Location = location,
+                    Rotation = rotation,
+                    FlipX = flipX,
+                    FlipY = flipY,
+                };
+                NetworkManager.singleton.client.Send(SpawnPlaceableEvent.EventID, msgPlaceableSpawned);
+
+                SendSocketMessage("placeResult", client, true, buildCooldown.Value);
+            } else {
+                piece.DestroySelf(true, false, false);
+                SendSocketMessage("placeResult", client, false);
+            }
+        }
+
+        public Placeable SpawnPlaceable(string pieceName, Vector2 location, int rotation, bool flipX, bool flipY) {
+
             if (pieceName == "Barbed Wire") {
                 pieceName = "Barbed Wire x1";
             }
 
             Placeable piecePrefab = placeablePrefabs.First(p => p.Name == pieceName);
-            PickableBlock pickablePiece = Instantiate(piecePrefab.PickableBlock);
-            NetworkServer.Spawn(pickablePiece.gameObject);
+            Placeable piece = Instantiate(piecePrefab);
 
-            PiecePlacementCursorPatch.Event = new PickBlockEvent(1, pickablePiece, null);
-            PiecePlacementCursorPatch.Information = new object[] { client, location, rotation, flipX, flipY };
-            GameEventManager.SendEvent(PiecePlacementCursorPatch.Event);
+            if (piece is FerrisWheel w) {
+                w.Clockwise = !flipX;
+                flipX = false;
+            } else if (piece is RotateBlock r) {
+                r.Clockwise = !flipX;
+                //flipX = false;
+            } else if (piece is Bomb b) {
+                b.Enable();
+            }
+
+            piece.transform.position = location;
+            piece.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Round(rotation / 90f) * 90f);
+            piece.transform.localScale = new Vector3(flipX ? -1 : 1, flipY ? -1 : 1, 1);
+
+            // Bodge: force a collision update
+            IEnumerable<CheckColliding> colliders = (IEnumerable<CheckColliding>) piece.GetType().GetField("PlacementCollidersNew", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(piece);
+            var fixedUpdate = typeof(CheckColliding).GetMethod("FixedUpdate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            foreach (CheckColliding collider in colliders) {
+                fixedUpdate.Invoke(collider, new object[0] { });
+            }
+
+            return piece;
         }
+
+        public class SpawnPlaceableEvent : MessageBase {
+
+            public static short EventID = short.MinValue + 654;
+
+            public string PrefabName;
+            public Vector2 Location;
+            public int Rotation;
+            public bool FlipX;
+            public bool FlipY;
+
+            public override void Serialize(NetworkWriter writer) {
+                writer.Write(PrefabName);
+                writer.Write(Location);
+                writer.Write(Rotation);
+                writer.Write(FlipX);
+                writer.Write(FlipY);
+            }
+
+            public override void Deserialize(NetworkReader reader) {
+                PrefabName = reader.ReadString();
+                Location = reader.ReadVector2();
+                Rotation = reader.ReadInt32();
+                FlipX = reader.ReadBoolean();
+                FlipY = reader.ReadBoolean();
+            }
+        }
+
     }
 }

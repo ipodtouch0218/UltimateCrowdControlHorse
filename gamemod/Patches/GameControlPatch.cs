@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using System;
+using GameEvent;
+using HarmonyLib;
 
 namespace UltimateCrowdControlHorse.Patches {
     [HarmonyPatch(typeof(GameControl))]
@@ -26,6 +28,16 @@ namespace UltimateCrowdControlHorse.Patches {
         [HarmonyPostfix]
         public static void ToPlayMode_Postfix() {
             CrowdControlMod.Instance.ToPlayMode();
+        }
+
+        [HarmonyPatch("handleEvent", new Type[] { typeof(GameEvent.GameEvent) })]
+        [HarmonyPostfix]
+        public static void handleEvent_Postfix(GameControl __instance, GameEvent.GameEvent e) {
+            if (!(e is NetworkMessageReceivedEvent nmre) || !(nmre.ReadMessage is CrowdControlMod.SpawnPlaceableEvent spe)) {
+                return;
+            }
+
+            CrowdControlMod.Instance.SpawnPlaceable(spe.PrefabName, spe.Location, spe.Rotation, spe.FlipX, spe.FlipY);
         }
     }
 }

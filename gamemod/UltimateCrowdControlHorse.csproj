@@ -120,9 +120,7 @@
   <ItemGroup>
     <Compile Include="Patches\GameControlPatch.cs" />
     <Compile Include="Patches\LobbyManagerPatch.cs" />
-    <Compile Include="Patches\NetworkClientPatch.cs" />
     <Compile Include="Patches\NetworkLobbyManagerPatch.cs" />
-    <Compile Include="Patches\PiecePlacementCursorPatch.cs" />
     <Compile Include="Patches\PlaceableMetadataListPatch.cs" />
     <Compile Include="CrowdControlMod.cs" />
     <Compile Include="Patches\PlaceablePatch.cs" />

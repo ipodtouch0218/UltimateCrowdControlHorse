@@ -17,11 +17,11 @@ namespace UltimateCrowdControlHorse.Patches {
 
             float placementTimer = (float) TimerField.GetValue(__instance);
 
+            CrowdControlMod.Instance.log.LogInfo(CrowdControlMod.Instance.IsConnected);
             if (CrowdControlMod.Instance.IsConnected && placementTimer > 0) {
                 // Give them time to place objects...
                 __result = true;
             }
         }
-
     }
 }

@@ -101,7 +101,11 @@ socketServer.on("connection", (socket) => {
 
         let coins = -1;
         if (!gameData[socket.room].unlimitedCoins) {
-            coins = Math.ceil(Math.max(gameData[socket.room].coinSettings.minCoins, gameData[socket.room].coinSettings.totalCoins / gameData[socket.room].clients.length));
+            if (gameData[socket.room].clients.length <= 0) {
+                coins = gameData[socket.room].coinSettings.totalCoins;
+            } else {
+                coins = Math.ceil(Math.max(gameData[socket.room].coinSettings.minCoins, gameData[socket.room].coinSettings.totalCoins / gameData[socket.room].clients.length));
+            }
         }
         setAllClientsCoins(coins);
         webSockets.to(socket.room).emit("setCoins", coins);
