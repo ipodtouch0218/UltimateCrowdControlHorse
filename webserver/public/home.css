@@ -178,7 +178,7 @@ h1 {
     background-color: #CCC;
 }
 
-.items button:disabled,button[disabled] {
+.items button:disabled {
     background-color: #333;
 }
 

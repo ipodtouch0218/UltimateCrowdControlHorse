@@ -805,9 +805,9 @@ function setCoins(newCoins) {
 		shop.button.disabled = shop.broken || coins < getItemPrice(shop.item);
 	}
 	if (coins < 0) {
-		coinCount.innerText = "&infin; &#x1FA99;";
+		coinCount.innerHTML = "&infin; &#x1FA99;";
 	} else {
-		coinCount.innerText = coins + " &#x1FA99;";
+		coinCount.innerHTML = coins + " &#x1FA99;";
 	}
 }
 

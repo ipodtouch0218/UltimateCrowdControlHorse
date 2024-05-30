@@ -1,6 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using GameEvent;
 using HarmonyLib;
 using SocketIOClient;
 using SocketIOClient.Newtonsoft.Json;
@@ -19,19 +20,22 @@ namespace UltimateCrowdControlHorse {
         private readonly Harmony harmony = new Harmony(modGUID);
 
         //---Configuration
-        private static ConfigEntry<string> webserverUrl;
-        private static ConfigEntry<bool> socketLogging;
-        private static ConfigEntry<float> buildCooldown;
-        private static ConfigEntry<bool> canBuildInPlayMode;
+        public static ConfigEntry<string> webserverUrl;
+        public static ConfigEntry<bool> socketLogging;
+        public static ConfigEntry<float> buildCooldown;
+        public static ConfigEntry<bool> canBuildInPlayMode;
 
-        private static ConfigEntry<int> minCoins;
-        private static ConfigEntry<int> totalCoins;
-        private static ConfigEntry<int> minPrice;
-        private static ConfigEntry<int> maxPrice;
-        private static ConfigEntry<bool> unlimitedCoins;
+        public static ConfigEntry<int> minCoins;
+        public static ConfigEntry<int> totalCoins;
+        public static ConfigEntry<int> minPrice;
+        public static ConfigEntry<int> maxPrice;
+        public static ConfigEntry<bool> unlimitedCoins;
 
         //---Static
         public static CrowdControlMod Instance { get; private set; }
+
+        //---Properties
+        public bool IsConnected => socket != null && socket.Connected;
 
         //---Variables
         public ManualLogSource log;
@@ -189,51 +193,13 @@ namespace UltimateCrowdControlHorse {
                 pieceName = "Barbed Wire x1";
             }
 
-            Placeable piece = Instantiate(placeablePrefabs.First(p => p.Name == pieceName));
-            piece.GenerateIDOnPick(piece.ID, 0);
-            piece.PickedUp = true;
-            piece.GetComponent<Rigidbody2D>().isKinematic = false;
-            piece.EnablePlacement();
+            Placeable piecePrefab = placeablePrefabs.First(p => p.Name == pieceName);
+            PickableBlock pickablePiece = Instantiate(piecePrefab.PickableBlock);
+            NetworkServer.Spawn(pickablePiece.gameObject);
 
-            if (piece is FerrisWheel w) {
-                w.Clockwise = !flipX;
-                flipX = false;
-            } else if (piece is RotateBlock r) {
-                r.Clockwise = !flipX;
-                //flipX = false;
-            } else if (piece is Bomb b) {
-                b.Enable();
-            }
-
-            piece.transform.position = location;
-            piece.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Round(rotation / 90f) * 90f);
-            piece.transform.localScale = new Vector3(flipX ? -1 : 1, flipY ? -1 : 1, 1);
-
-            // Bodge: force a collision update
-            IEnumerable<CheckColliding> colliders = (IEnumerable<CheckColliding>) piece.GetType().GetField("PlacementCollidersNew", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(piece);
-            var fixedUpdate = typeof(CheckColliding).GetMethod("FixedUpdate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            foreach (CheckColliding collider in colliders) {
-                fixedUpdate.Invoke(collider, new object[0] { });
-            }
-
-            if (piece.CanPlace()) {
-                piece.Place(0);
-
-                MsgPiecePlaced msgPiecePlaced = new MsgPiecePlaced() {
-                    PlayerNumber = 0,
-                    PiecePosition = piece.transform.position,
-                    PieceScale = piece.transform.localScale,
-                    PieceRotation = piece.transform.rotation,
-                    PieceID = piece.ID,
-                    PieceWasMoved = false,
-                };
-                NetworkManager.singleton.client.Send(NetMsgTypes.PiecePlaced, msgPiecePlaced);
-
-                SendSocketMessage("placeResult", client, true, buildCooldown.Value);
-            } else {
-                piece.DestroySelf(true, false, true);
-                SendSocketMessage("placeResult", client, false);
-            }
+            PiecePlacementCursorPatch.Event = new PickBlockEvent(1, pickablePiece, null);
+            PiecePlacementCursorPatch.Information = new object[] { client, location, rotation, flipX, flipY };
+            GameEventManager.SendEvent(PiecePlacementCursorPatch.Event);
         }
     }
 }

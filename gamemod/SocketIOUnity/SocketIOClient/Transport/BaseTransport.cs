@@ -94,7 +94,6 @@ namespace SocketIOClient.Transport {
         /// <param name="cancellationToken"></param>
         private void StartPing(CancellationToken cancellationToken)
         {
-            Debug.WriteLine($"[Ping] Interval: {OpenedMessage.PingInterval}");
             Task.Factory.StartNew(async () =>
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -107,9 +106,7 @@ namespace SocketIOClient.Transport {
                     try
                     {
                         var ping = new PingMessage();
-                        Debug.WriteLine($"[Ping] Sending");
                         await SendAsync(ping, CancellationToken.None).ConfigureAwait(false);
-                        Debug.WriteLine($"[Ping] Has been sent");
                         _pingTime = DateTime.Now;
                         MessageSubject.OnNext(ping);
                     }
@@ -154,11 +151,9 @@ namespace SocketIOClient.Transport {
 
         public void OnNext(string text)
         {
-            Debug.WriteLine($"[Receive] {text}");
             IMessage msg = null;
             try {
                 msg = MessageFactory.CreateMessage(Options.EIO, text);
-                Debug.WriteLine("created message " + msg.Type);
             } catch (Exception e) {
                 Debug.WriteLine(e.Message + '\n' + e.StackTrace);
             }
@@ -229,7 +224,6 @@ namespace SocketIOClient.Transport {
 
         public void OnNext(byte[] bytes)
         {
-            Debug.WriteLine($"[Receive] binary message");
             if (_messageQueue.Count > 0)
             {
                 var msg = _messageQueue.Peek();

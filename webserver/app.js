@@ -98,13 +98,13 @@ socketServer.on("connection", (socket) => {
         gameData[socket.room].level = newLevelName;
         webSockets.to(socket.room).emit("changeLevel", newLevelName);
 
-        if (gameData[socket.room].unlimitedCoins) {
-            gameData[socket.room].coinsPerClient = -1;
-        } else {
-            gameData[socket.room].coinsPerClient = Math.ceil(Math.max(gameData[socket.room].coinSettings.minCoins, gameData[socket.room].coinSettings.totalCoins / gameData[socket.room].clients.length));
+        let coins = -1;
+        if (!gameData[socket.room].unlimitedCoins) {
+            coins = Math.ceil(Math.max(gameData[socket.room].coinSettings.minCoins, gameData[socket.room].coinSettings.totalCoins / gameData[socket.room].clients.length));
         }
-        setAllClientsCoins(gameData[socket.room].coinsPerClient);
-        webSockets.to(socket.room).emit("setCoins", gameData[socket.room].coinsPerClient);
+        setAllClientsCoins(coins);
+        webSockets.to(socket.room).emit("setCoins", coins);
+        gameData[socket.room].coinsPerClient = coins;
     });
 
     socket.on("endGame", () => {
@@ -114,6 +114,7 @@ socketServer.on("connection", (socket) => {
 
         webSockets.to(socket.room).emit("endGame");
         webSockets.to(socket.room).emit("setCoins", 0);
+        webSockets.to(socket.room).emit("setCooldown", 0);
     });
 
     socket.on("placeResult", (client, result, cooldown) => {
@@ -185,11 +186,11 @@ webSockets.on("connection", (socket) => {
                 "sockets": [socket],
                 "coins": data.coinsPerClient,
             };
-            data.clients.push(ourRoomData);
+            gameData[room].clients.push(ourRoomData);
         } else {
             ourRoomData.ids.push(socket.id);
             ourRoomData.sockets.push(socket);
-            data.clients[ourRoomDataIndex] = ourRoomData;
+            gameData[room].clients[ourRoomDataIndex] = ourRoomData;
         }
 
         socket.emit("setCoins", ourRoomData.coins)
