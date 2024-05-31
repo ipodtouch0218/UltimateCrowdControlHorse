@@ -129,6 +129,7 @@
     <Compile Include="Patches\VersusControlPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerializedPlaceable.cs" />
+    <Compile Include="SerializedWeightedBlock.cs" />
     <Compile Include="SocketIOUnity\SocketIOClient.Newtonsoft.Json\ByteArrayConverter.cs" />
     <Compile Include="SocketIOUnity\SocketIOClient.Newtonsoft.Json\NewtonsoftJsonSerializer.cs" />
     <Compile Include="SocketIOUnity\SocketIOClient\DisconnectReason.cs" />
@@ -171,6 +172,7 @@
     <Compile Include="SocketIOUnity\SocketIOClient\UriConverters\UriConverter.cs" />
     <Compile Include="SocketIOUnity\SocketIOUnity.cs" />
     <Compile Include="SocketIOUnity\UnityThread.cs" />
+    <Compile Include="SpawnPlaceableEvent.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

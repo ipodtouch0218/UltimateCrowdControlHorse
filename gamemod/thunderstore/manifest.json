@@ -1,0 +1,9 @@
+{
+    "name": "UltimateCrowdControlHorse",
+    "version_number": "0.0.1",
+    "website_url": "https://ucch.azurewebsites.net",
+    "description": "Allows chatters to place objects in the level in realtime!",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100"
+    ]
+}

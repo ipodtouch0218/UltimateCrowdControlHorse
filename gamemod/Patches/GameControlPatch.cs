@@ -33,10 +33,13 @@ namespace UltimateCrowdControlHorse.Patches {
         [HarmonyPatch("handleEvent", new Type[] { typeof(GameEvent.GameEvent) })]
         [HarmonyPostfix]
         public static void handleEvent_Postfix(GameControl __instance, GameEvent.GameEvent e) {
-            if (!(e is NetworkMessageReceivedEvent nmre) || !(nmre.ReadMessage is CrowdControlMod.SpawnPlaceableEvent spe)) {
+            if (!(e is NetworkMessageReceivedEvent nmre) || !(nmre.ReadMessage is SpawnPlaceableEvent spe)) {
                 return;
             }
 
+            if (CrowdControlMod.socketLogging.Value) {
+                CrowdControlMod.Instance.log.LogInfo($"[SOCKET] Incoming SpawnPlaceableEvent: {spe}");
+            }
             CrowdControlMod.Instance.SpawnPlaceable(spe.PrefabName, spe.Location, spe.Rotation, spe.FlipX, spe.FlipY);
         }
     }

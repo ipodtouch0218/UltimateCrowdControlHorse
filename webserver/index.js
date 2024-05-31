@@ -22,6 +22,7 @@ const socketServer = new Server(httpServer, {
 });
 
 const gameData = {};
+const gameClients = {};
 
 const gameSockets = socketServer.of("/game");
 const webSockets = socketServer.of("/web");
@@ -45,6 +46,7 @@ socketServer.on("connection", (socket) => {
             data = {
                 level: null,
                 placeables: [],
+                prices: {},
                 clients: [],
                 coinSettings: {
                     minCoins: 100,
@@ -53,7 +55,7 @@ socketServer.on("connection", (socket) => {
                     maxPrice: 100,
                     unlimitedCoins: false,
                 },
-                coinsPerClient: 50,
+                coinsPerClient: null,
             };
             gameData[room] = data;
         }
@@ -90,8 +92,8 @@ socketServer.on("connection", (socket) => {
     });
 
     function setAllClientsCoins(coins) {
-        for (let i = 0; i < gameData[socket.room].clients.length; i++) {
-            gameData[socket.room].clients[i].coins = coins;
+        for (let i = 0; i < gameClients[socket.room].length; i++) {
+            gameClients[socket.room][i].coins = coins;
         }
     }
 
@@ -101,10 +103,10 @@ socketServer.on("connection", (socket) => {
 
         let coins = -1;
         if (!gameData[socket.room].unlimitedCoins) {
-            if (gameData[socket.room].clients.length <= 0) {
+            if (gameClients[socket.room].length <= 0) {
                 coins = gameData[socket.room].coinSettings.totalCoins;
             } else {
-                coins = Math.ceil(Math.max(gameData[socket.room].coinSettings.minCoins, gameData[socket.room].coinSettings.totalCoins / gameData[socket.room].clients.length));
+                coins = Math.ceil(Math.max(gameData[socket.room].coinSettings.minCoins, gameData[socket.room].coinSettings.totalCoins / gameClients[socket.room].length));
             }
         }
         setAllClientsCoins(coins);
@@ -123,16 +125,17 @@ socketServer.on("connection", (socket) => {
     });
 
     socket.on("placeResult", (client, result, cooldown) => {
-        let ourClientIndex = gameData[socket.room].clients.findIndex(e => e.ids.includes(client));
-        let ourClientData = gameData[socket.room].clients[ourClientIndex];
+        let ourClientIndex = gameClients[socket.room].findIndex(e => e.ids.includes(client));
+        let ourClientData = gameClients[socket.room][ourClientIndex];
         if (result) {
-            ourClientData.coins -= 10;
+            ourClientData.coins -= gameData[socket.room].prices[ourClientData.placing];
             ourClientData.cooldown = new Date().getTime() + (cooldown * 1000);
             for (const clientSocket of ourClientData.sockets) {
                 clientSocket.emit("setCoins", ourClientData.coins);
                 clientSocket.emit("setCooldown", ourClientData.cooldown);
             }
-            gameData[socket.room].clients[ourClientIndex] = ourClientData;
+            ourClientData.placing = null;
+            gameClients[socket.room][ourClientIndex] = ourClientData;
         }
         for (const clientSocket of ourClientData.sockets) {
             clientSocket.emit("placeResult", result);
@@ -142,7 +145,7 @@ socketServer.on("connection", (socket) => {
     socket.on("canPlaceItems", (canPlaceItems) => {
         gameData[socket.room].canPlaceItems = canPlaceItems;
         webSockets.to(socket.room).emit("canPlaceItems", canPlaceItems);
-    })
+    });
 
     socket.on("setCoinSettings", (minCoins, totalCoins, minPrice, maxPrice, unlimitedCoins) => {
         gameData[socket.room].coinSettings.minCoins = minCoins;
@@ -150,7 +153,33 @@ socketServer.on("connection", (socket) => {
         gameData[socket.room].coinSettings.minPrice = minPrice;
         gameData[socket.room].coinSettings.maxPrice = maxPrice;
         gameData[socket.room].coinSettings.unlimitedCoins = unlimitedCoins;
-    })
+
+        gameData[socket.room].coinsPerClient = minCoins;
+
+        for (const index in gameClients[socket.room]) {
+            if (gameClients[index].coins == null) {
+                gameClients[index].coins = minCoins;
+            }
+        }
+    });
+
+    socket.on("setPrices", (weights, minWeight, maxWeight) => {
+        const minPrice = gameData[socket.room].coinSettings.minPrice;
+        const rangePrice = gameData[socket.room].coinSettings.maxPrice - minPrice;
+
+        const rangeWeight = maxWeight - minWeight;
+
+        gameData[socket.room].prices = {};
+        for (const weight of weights) {
+            let price = ((1 - (weight.Weight - minWeight) / rangeWeight) * rangePrice) + minPrice;
+
+            price = Math.round(price / 5) * 5; // Round (down) to the nearest 5.
+
+            gameData[socket.room].prices[weight.Name] = price;
+        }
+
+        webSockets.to(socket.room).emit("setPrices", gameData[socket.room].prices);
+    });
 });
 
 webSockets.on("connection", (socket) => {
@@ -161,62 +190,61 @@ webSockets.on("connection", (socket) => {
         socket.emit("joinedroom", room);
         socket.room = room;
 
-        let data = gameData[room];
-        if (!data) {
-            data = {
-                level: null,
-                placeables: [],
-                clients: [],
-                coinSettings: {
-                    minCoins: 100,
-                    totalCoins:  1000,
-                    minPrice: 25,
-                    maxPrice: 100,
-                    unlimitedCoins: false,
-                },
-                coinsPerClient: 50,
-            };
-            gameData[room] = data;
+        if (!gameClients[room]) {
+            gameClients[room] = [];
         }
 
-        socket.emit("changeLevel", gameData[room].level);
-        socket.emit("updateAllPlaceables", gameData[room].placeables);
-        socket.emit("canPlaceItems", gameData[socket.room].canPlaceItems);
-
-        let ourRoomDataIndex = data.clients.findIndex(e => e.ip == socket.ip);
+        let ourRoomDataIndex = gameClients[room].findIndex(e => e.ip == socket.ip);
         if (ourRoomDataIndex < 0) {
             ourRoomData = {
                 "ip": socket.handshake.ip,
                 "ids": [socket.id],
                 "sockets": [socket],
-                "coins": data.coinsPerClient,
+                "coins": null,
+                "cooldown": 0,
             };
-            gameData[room].clients.push(ourRoomData);
+            if (gameData[room] && gameData[room].coinsPerClient != null) {
+                ourRoomData.coins = gameData[room].coinsPerClient;
+            }
+            ourRoomDataIndex = gameClients[room].length;
+            gameClients[room].push(ourRoomData);
         } else {
-            gameData[room].clients[ourRoomDataIndex].ids.push(socket.id);
-            gameData[room].clients[ourRoomDataIndex].sockets.push(socket);
+            gameClients[room][ourRoomDataIndex].ids.push(socket.id);
+            gameClients[room][ourRoomDataIndex].sockets.push(socket);
         }
 
-        socket.emit("setCoins", ourRoomData.coins)
-        socket.emit("setCooldown", ourRoomData.cooldown);
+        if (gameData[room]) {
+            const roomData = gameData[room];
+            socket.emit("changeLevel", roomData.level);
+            socket.emit("updateAllPlaceables", roomData.placeables);
+            socket.emit("canPlaceItems", roomData.canPlaceItems);
+            socket.emit("setPrices", roomData.prices);
+        }
+
+        socket.emit("setCoins", gameClients[room][ourRoomDataIndex].coins)
+        socket.emit("setCooldown", gameClients[room][ourRoomDataIndex].cooldown);
     });
 
     socket.on("disconnect", () => {
         if (gameData[socket.room]) {
-            gameData[socket.room].clients = gameData[socket.room].clients.filter(c => c.socket != socket);
+            gameClients[socket.room] = gameClients[socket.room].filter(c => c.socket != socket);
         }
     });
 
     socket.on("placeItem", (obj, posX, posY, rotation, flipX, flipY) => {
-
         let roomData = gameData[socket.room];
-        let clientData = roomData.clients.find(e => e.ip == socket.ip);
-        if (!roomData.canPlaceItems || clientData.coins < 10 || (clientData.cooldown && clientData.cooldown > new Date().getTime())) {
+        let clientIndex = gameClients[socket.room].findIndex(e => e.ip == socket.ip);
+        let clientData = gameClients[socket.room][clientIndex];
+
+        const price = roomData.prices[obj];
+
+        if (!price || !roomData.canPlaceItems || clientData.coins < price || (clientData.cooldown && clientData.cooldown > new Date().getTime())) {
             socket.emit("placeResult", false);
             return;
         }
 
         socketServer.to(socket.room).emit("placeItem", socket.id, obj, posX, posY, rotation, flipX, flipY);
+        gameClients[socket.room][clientIndex].placing = obj;
     });
 });
 

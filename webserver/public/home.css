@@ -136,9 +136,19 @@ h1 {
     flex-direction: column;
 }
 
+
+.sidepanel .content button:hover {
+    background-color: #CCC;
+}
+
+.sidepanel .content button:disabled {
+    background-color: #333;
+}
+
 .sidepanel .content .header {
     text-align: center;
     font-size: x-large;
+    padding-bottom: 10px;
 }
 
 .sidepanel .content .items {
@@ -147,16 +157,7 @@ h1 {
     container-name: itembox;
 }
 
-.items p {
-    text-align: left;
-    font-size: large;
-    margin: 0 40px 0 20px;
-    color: #888;
-    position: relative;
-    top: 10px;
-}
-
-.items button {
+.sidepanel .content button {
     font-size: large;
     padding: 8px 12px;
     border-radius: 5px;
@@ -174,17 +175,26 @@ h1 {
     transform: translate(-50%, -50%) rotate(-10deg);
 }
 
-.items button:hover {
-    background-color: #CCC;
-}
-
-.items button:disabled {
-    background-color: #333;
-}
-
-.brokenText {
+/* misc */
+.label {
+    text-align: left;
+    font-size: large;
+    margin: 0 40px 0 20px;
+    color: #888;
     position: relative;
-    font-size: 4vw;
+    top: 10px;
+}
+
+.sortlabel {
+    display: inline;
+}
+
+.toggled {
+    background-color: #88ff88 !important;
+}
+
+.toggled:hover {
+    background-color: #22dd22 !important;
 }
 
 #pageInGame img,p {

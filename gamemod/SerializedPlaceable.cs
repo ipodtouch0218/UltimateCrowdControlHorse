@@ -38,18 +38,18 @@ namespace UltimateCrowdControlHorse {
         public object data;
 
         public SerializedPlaceable(Placeable placeable) {
-            var transform = placeable.transform;
 
             object objData = null;
-            if (placeable is Teleporter t) {
-                objData = new TeleporterData(t);
-            } else if (placeable is FerrisWheel w) {
-                objData = new FerrisWheelData(w);
+            switch (placeable) {
+                case Teleporter t: objData = new TeleporterData(t);
+                    break;
+                case FerrisWheel w: objData = new FerrisWheelData(w);
+                    break;
             }
 
-            pos = new float[] { transform.position.x, transform.position.y };
-            rot = Mathf.RoundToInt(transform.rotation.eulerAngles.z);
-            scale = new float[] { transform.localScale.x, transform.localScale.y };
+            pos = new float[] { placeable.OriginalPosition.x, placeable.OriginalPosition.y };
+            rot = Mathf.RoundToInt(placeable.OriginalRotation.eulerAngles.z);
+            scale = new float[] { placeable.OriginalScale.x, placeable.OriginalScale.y };
             id = placeable.ID;
             name = placeable.Name;
             data = objData;

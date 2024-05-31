@@ -4,9 +4,10 @@ using BepInEx.Logging;
 using HarmonyLib;
 using SocketIOClient;
 using SocketIOClient.Newtonsoft.Json;
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UltimateCrowdControlHorse.Patches;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -41,8 +42,8 @@ namespace UltimateCrowdControlHorse {
 
         public readonly List<SerializedPlaceable> pendingUpdates = new List<SerializedPlaceable>();
         public readonly List<int> pendingRemovals = new List<int>();
+        private readonly HashSet<Placeable> placeablePrefabs = new HashSet<Placeable>();
 
-        private HashSet<Placeable> placeablePrefabs = new HashSet<Placeable>();
         private SocketIOUnity socket;
         private string currentLevel;
         private string roomId;
@@ -95,20 +96,20 @@ namespace UltimateCrowdControlHorse {
                 Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
             });
             socket.JsonSerializer = new NewtonsoftJsonSerializer();
-            socket.OnConnected += (object sender, EventArgs e) => {
+            socket.OnConnected += (sender, args) => {
                 log.LogInfo("[SOCKET] Connected to the UccH webserver");
                 SendSocketMessage("join", roomId);
                 SendSocketMessage("changeLevel", currentLevel);
                 SendSocketMessage("canPlaceItems", currentLevel != null && (inEditMode || canBuildInPlayMode.Value));
                 SendSocketMessage("setCoinSettings", minCoins.Value, totalCoins.Value, minPrice.Value, maxPrice.Value, unlimitedCoins.Value);
+                UpdatePlaceableSpawnChances();
                 PlaceablePatch.UpdateAllPlaceables();
             };
-            socket.OnDisconnected += (object sender, string str) => {
+            socket.OnDisconnected += (sender, reason) => {
                 log.LogInfo("[SOCKET] Disconnected from the UccH webserver");
             };
 
             socket.OnUnityThread("placeItem", (response) => {
-                log.LogInfo("place item!");
                 string clientId = response.GetValue<string>(0);
                 string objName = response.GetValue<string>(1);
                 float x = response.GetValue<float>(2);
@@ -117,9 +118,11 @@ namespace UltimateCrowdControlHorse {
                 bool flipX = response.GetValue<bool>(5);
                 bool flipY = response.GetValue<bool>(6);
 
-                log.LogInfo($"{clientId} {objName} {x} {y} {rotation} {flipX} {flipY}");
+                if (socketLogging.Value) {
+                    log.LogInfo($"[SOCKET] Incoming object placement from {clientId}: {objName} at loc: ({x},{y}), rot: {rotation}, flipX: {flipX}, flipY: {flipY}");
+                }
 
-                PlacePieceFromNetwork(clientId, objName, new Vector2(x, y), rotation, flipX, flipY);
+                StartCoroutine(PlacePieceFromNetwork(clientId, objName, new Vector2(x, y), rotation, flipX, flipY));
             });
 
             log.LogInfo("Attempting to connect to the UccH webserver...");
@@ -139,7 +142,7 @@ namespace UltimateCrowdControlHorse {
                 return;
             }
             if (socketLogging.Value) {
-                log.LogInfo($"[SOCKET] Sending message \"{message}\" with {objects.Length} objects");
+                log.LogInfo($"[SOCKET] Sending message \"{message}\" with parameters \"{socket.JsonSerializer.Serialize(objects).Json}\"");
             }
             await socket.EmitAsync(message, objects);
         }
@@ -160,6 +163,7 @@ namespace UltimateCrowdControlHorse {
         public void ToEditMode() {
             inEditMode = true;
             SendSocketMessage("canPlaceItems", inEditMode || canBuildInPlayMode.Value);
+            UpdatePlaceableSpawnChances();
         }
 
         public void ToPlayMode() {
@@ -167,21 +171,55 @@ namespace UltimateCrowdControlHorse {
             SendSocketMessage("canPlaceItems", inEditMode || canBuildInPlayMode.Value);
         }
 
-        public void FindPlaceablePrefabs() {
-            this.placeablePrefabs.Clear();
-
-            GameObject[] placeablePrefabs = PlaceableMetadataList.Instance.allBlockPrefabs;
-            foreach (var go in placeablePrefabs) {
-                this.placeablePrefabs.Add(go.GetComponent<Placeable>());
+        private static FieldInfo currentBlockWeightsField;
+        private static FieldInfo weightedBlocksField;
+        public void UpdatePlaceableSpawnChances() {
+            if (!(LobbyManager.instance.CurrentGameController is VersusControl vc)) {
+                return;
             }
-            log.LogInfo($"Found {this.placeablePrefabs.Count} placeable object prefabs");
+
+            log.LogInfo($"partybox: {vc.PartyBox}");
+            vc.PartyBox.ComputeEffectiveBlockWeights();
+
+            if (currentBlockWeightsField == null) {
+                currentBlockWeightsField = typeof(PartyBox).GetField("currentBlockWeights", BindingFlags.Instance | BindingFlags.NonPublic);
+                weightedBlocksField = typeof(WeightedBlockList).GetField("weightedBlocks", BindingFlags.Instance | BindingFlags.NonPublic);
+            }
+
+            WeightedBlockList blockList = (WeightedBlockList) currentBlockWeightsField.GetValue(vc.PartyBox);
+            log.LogInfo($"blockList: {blockList}");
+            WeightedBlockList.WeightedBlock[] blocks = (WeightedBlockList.WeightedBlock[]) weightedBlocksField.GetValue(blockList);
+            log.LogInfo($"blocks: {blocks}");
+
+            // Sort blocks by our own placeables (to remove honey / invalid variants?)
+            List<SerializedWeightedBlock> customBlocks = blocks
+                .Where(wb => placeablePrefabs.Contains(wb.placeable))
+                .Where(wb => wb.weight > 0)
+                .Select(wb => new SerializedWeightedBlock(wb))
+                .ToList();
+
+            int maxWeight = blocks.Max(wb => wb.weight);
+            int minWeight = blocks.Min(wb => wb.weight);
+
+            SendSocketMessage("setPrices", customBlocks, minWeight, maxWeight);
         }
 
-        public void PlacePieceFromNetwork(string client, string pieceName, Vector2 location, int rotation, bool flipX, bool flipY) {
+        public void FindPlaceablePrefabs() {
+            placeablePrefabs.Clear();
+
+            GameObject[] foundPrefabs = PlaceableMetadataList.Instance.allBlockPrefabs;
+            foreach (var go in foundPrefabs) {
+                placeablePrefabs.Add(go.GetComponent<Placeable>());
+            }
+            log.LogInfo($"Found {placeablePrefabs.Count} placeable object prefabs");
+        }
+
+        private static readonly WaitForFixedUpdate WaitForFixedUpdate = new WaitForFixedUpdate();
+        public IEnumerator PlacePieceFromNetwork(string client, string pieceName, Vector2 location, int rotation, bool flipX, bool flipY) {
 
             if (!inEditMode && !canBuildInPlayMode.Value) {
                 SendSocketMessage("placeResult", client, false);
-                return;
+                yield break;
             }
 
             if (placeablePrefabs.Count <= 0) {
@@ -189,6 +227,11 @@ namespace UltimateCrowdControlHorse {
             }
 
             Placeable piece = SpawnPlaceable(pieceName, location, rotation, flipX, flipY);
+            piece.IgnoreBounds = false;
+
+            // Wait a fixed update or two for collisions to resolve
+            yield return WaitForFixedUpdate;
+            yield return WaitForFixedUpdate;
 
             if (piece.CanPlace()) {
 
@@ -201,10 +244,19 @@ namespace UltimateCrowdControlHorse {
                     FlipX = flipX,
                     FlipY = flipY,
                 };
-                NetworkManager.singleton.client.Send(SpawnPlaceableEvent.EventID, msgPlaceableSpawned);
+                NetworkManager.singleton.client.Send(SpawnPlaceableEvent.EventId, msgPlaceableSpawned);
+                LobbyManager.instance.CurrentGameController.SpawnNetSurrogate(piece.ID);
+
+                if (socketLogging.Value) {
+                    log.LogInfo($"[SOCKET] Object placement from {client} succeeded! Sending spawn events to clients...");
+                }
 
                 SendSocketMessage("placeResult", client, true, buildCooldown.Value);
             } else {
+                if (socketLogging.Value) {
+                    log.LogInfo($"[SOCKET] Failed object placement from {client}, CanPlace()==false");
+                }
+
                 piece.DestroySelf(true, false, false);
                 SendSocketMessage("placeResult", client, false);
             }
@@ -218,57 +270,29 @@ namespace UltimateCrowdControlHorse {
 
             Placeable piecePrefab = placeablePrefabs.First(p => p.Name == pieceName);
             Placeable piece = Instantiate(piecePrefab);
+            piece.SwitchColliderTo(ColliderModeEnum.PlacementPhase);
 
-            if (piece is FerrisWheel w) {
-                w.Clockwise = !flipX;
-                flipX = false;
-            } else if (piece is RotateBlock r) {
-                r.Clockwise = !flipX;
-                //flipX = false;
-            } else if (piece is Bomb b) {
-                b.Enable();
+            switch (piece) {
+                case FerrisWheel w:
+                    w.Clockwise = !flipX;
+                    flipX = false;
+                    break;
+                case RotateBlock r:
+                    r.Clockwise = !flipX;
+                    //flipX = false;
+                    break;
+                case Bomb b:
+                    b.Enable();
+                    break;
             }
 
             piece.transform.position = location;
             piece.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Round(rotation / 90f) * 90f);
             piece.transform.localScale = new Vector3(flipX ? -1 : 1, flipY ? -1 : 1, 1);
 
-            // Bodge: force a collision update
-            IEnumerable<CheckColliding> colliders = (IEnumerable<CheckColliding>) piece.GetType().GetField("PlacementCollidersNew", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).GetValue(piece);
-            var fixedUpdate = typeof(CheckColliding).GetMethod("FixedUpdate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            foreach (CheckColliding collider in colliders) {
-                fixedUpdate.Invoke(collider, new object[0] { });
-            }
-
             return piece;
         }
 
-        public class SpawnPlaceableEvent : MessageBase {
-
-            public static short EventID = short.MinValue + 654;
-
-            public string PrefabName;
-            public Vector2 Location;
-            public int Rotation;
-            public bool FlipX;
-            public bool FlipY;
-
-            public override void Serialize(NetworkWriter writer) {
-                writer.Write(PrefabName);
-                writer.Write(Location);
-                writer.Write(Rotation);
-                writer.Write(FlipX);
-                writer.Write(FlipY);
-            }
-
-            public override void Deserialize(NetworkReader reader) {
-                PrefabName = reader.ReadString();
-                Location = reader.ReadVector2();
-                Rotation = reader.ReadInt32();
-                FlipX = reader.ReadBoolean();
-                FlipY = reader.ReadBoolean();
-            }
-        }
 
     }
 }

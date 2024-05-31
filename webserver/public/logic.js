@@ -5,6 +5,7 @@ submitButton.addEventListener("click", () => {
 	connectToRoom(roomField.value);
 });
 
+let prices = {};
 var socket = null;
 const pageJoinRoom = document.getElementById("pageJoinRoom");
 const pageConnecting = document.getElementById("pageConnecting");
@@ -193,7 +194,6 @@ const objectInfo = {
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
 		"shopCrop": [130, 0],
-		"broken": true,
 	},
 	"Stairs": {
 		"offset": [-1.5, -1.5],
@@ -228,6 +228,8 @@ const objectInfo = {
 		"offset": [0, -2],
 		"rotateOffset": [0, -2],
 		"scrollAction": "rotate",
+		"shopCrop": [140, 140],
+		"shopTransform": "rotate(90deg)",
 	},
 	"PressureTriggerSpikes": {
 		"offset": [-1, -0.2],
@@ -239,14 +241,14 @@ const objectInfo = {
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
 		"shopCrop": [90, 50],
-		"broken": true,
+		"broken": false,
 	},
 	"Ice": {
 		"offset": [0, -1],
 		"rotateOffset": [0, 0],
 		"scrollAction": "rotate",
 		"shopCrop": [130, 0],
-		"broken": true,
+		"broken": false,
 	},
 	"Spikey Ball": {
 		"offset": [-1, -1],
@@ -294,7 +296,8 @@ const objectInfo = {
 		"offset": [-1, -2],
 		"rotateOffset": [0, -1],
 		"scrollAction": "rotate",
-		"shopCrop": [60, 70],
+		"shopCrop": [140, 140],
+		"shopTransform": "rotate(90deg)",
 	},
 	"CrumbleBlockA": {
 		"offset": [0, 0],
@@ -347,6 +350,7 @@ const objectInfo = {
 		"rotateOffset": [0, -0.5],
 		"scrollAction": "flipX",
 		"scrollShiftAction": "rotate",
+		"shopCrop": [20, 0],
 	},
 	"Crossbow": {
 		"offset": [-1, -0.5],
@@ -417,12 +421,14 @@ const objectInfo = {
 		"flipRotation": true,
 		"scrollAction": "rotate",
 		"scrollShiftAction": "flipX",
+		"shopTransform": "translateX(-33%)",
 	},
 	"Automatic Door": {
 		"offset": [0, -1.5],
 		"rotateOffset": [0, -0.5],
 		"scrollAction": "rotate",
 		"scrollShiftAction": "flipX",
+		"shopTransform": "translateX(20%)",
 	},
 	"DiagonalMover": {
 		"offset": [-3, -3],
@@ -459,11 +465,11 @@ const objectInfo = {
 		"scrollShiftAction": "flipX",
 	},
 	"FerrisWheel": {
-		"offset": [-2, -2.5],
+		"offset": [-3, -3],
 		"rotateOffset": [0, 0],
 		"customImage": "FerrisWheelWithPlatforms",
 		"scrollAction": "flipX",
-		"broken": true,
+		"broken": false,
 		"alternateNames": ["FerrisWheel", "Ferris Wheel"],
 	},
 	"Bomb Mini": {
@@ -559,6 +565,126 @@ var itemShops = [];
 var coins = 0;
 var itemPlacement = null;
 
+function updateItemShop(itemShop) {
+	let obj = itemShop.item;
+	let info = objectInfo[itemShop.item];
+
+	if (info.broken) {
+		itemShop.broken.classList.remove("hidden");
+		itemShop.button.disabled = true;
+	} else {
+		itemShop.broken.classList.add("hidden");
+		itemShop.button.disabled = false;
+	}
+
+	if (getItemPrice(obj) == null) {
+		// Disable the button
+		itemShop.button.disabled = true;
+	} else {
+		// Enable if we have enough coins
+		itemShop.button.disabled = coins < getItemPrice(obj);
+	}
+
+	let imageName = itemShop.item;
+	if (info.customImage) {
+		imageName = info.customImage;
+	}
+	itemShop.image.src = "/placeables/" + imageName + ".png";
+	itemShop.image.style.transform = info.shopTransform;
+
+	if (info.shopCrop) {
+		itemShop.image.style.marginTop = -info.shopCrop[0] + "px";
+		itemShop.image.style.marginBottom = -info.shopCrop[1] + "px";
+	}
+
+	itemShop.button.innerHTML = getItemPrice(obj) + " &#x1FA99;";
+}
+
+const categoryTemplate = document.getElementById("categoryTemplate");
+const template = document.getElementById("itemTemplate");
+for (const category of Object.keys(shopCategories)) {
+
+	let newCategory = categoryTemplate.cloneNode(true);
+	newCategory.id = "category-" + category;
+	newCategory.classList.remove("hidden");
+	newCategory.innerHTML = category;
+	template.parentElement.appendChild(newCategory);
+
+	for (const obj of shopCategories[category]) {
+		let newItem = template.cloneNode(true);
+		newItem.id = "item-" + obj;
+		newItem.classList.remove("hidden");
+		template.parentElement.appendChild(newItem);
+
+		newItem.childNodes[3].addEventListener("click", () => {
+			if (!objectInfo[obj].broken) {
+				buyItem(obj);
+			}
+		});
+
+		const newItemShop = {
+			"item": obj,
+			"div": newItem,
+			"image": newItem.childNodes[1],
+			"button": newItem.childNodes[3],
+			"broken": newItem.childNodes[5],
+		};
+
+		updateItemShop(newItemShop);
+		itemShops.push(newItemShop);
+	}
+}
+
+let purchasableOnly = false;
+const purchasableOnlyButton = document.getElementById("show-purchasableOnly");
+function togglePurchasableOnly() {
+	purchasableOnly = !purchasableOnly;
+	if (purchasableOnly) {
+		purchasableOnlyButton.classList.add("toggled");
+	} else {
+		purchasableOnlyButton.classList.remove("toggled");
+	}
+	updateAllItemShopVisibility();
+}
+
+function getItemCategory(name) {
+	for (const category of Object.keys(shopCategories)) {
+		if (shopCategories[category].includes(name)) {
+			return category;
+		}
+	}
+	return null;
+}
+
+function updateAllItemShopVisibility() {
+	let validCategories = [];
+	for (const itemShop of itemShops) {
+		if (purchasableOnly) {
+			if (getItemPrice(itemShop.item) == null || coins < getItemPrice(itemShop.item)) {
+				// Not purchasable
+				itemShop.div.classList.add("hidden");
+			} else {
+				itemShop.div.classList.remove("hidden");
+				validCategories.push(getItemCategory(itemShop.item));
+			}
+		} else {
+			itemShop.div.classList.remove("hidden");
+			validCategories.push(getItemCategory(itemShop.item));
+		}
+	}
+
+	console.log(validCategories);
+
+	for (const category of Object.keys(shopCategories)) {
+		const categoryNode = document.getElementById("category-" + category);
+		if (validCategories.includes(category)) {
+			categoryNode.classList.remove("hidden");
+		} else {
+			categoryNode.classList.add("hidden");
+		}
+	}
+}
+
 function endItemPlacement() {
 	if (itemPlacement) {
 		itemPlacement.image.remove();
@@ -567,7 +693,10 @@ function endItemPlacement() {
 }
 
 function buyItem(obj) {
-	toggleItemPanel();
+	if (!canPlaceItems || new Date().getTime() < cooldownTimer) {
+		return;
+	}
+	closeItemPanel();
 	endItemPlacement();
 
 	const level = levelInfo[currentLevel];
@@ -746,70 +875,24 @@ bg.onclick = () => {
 		itemPlacement.rotation, itemPlacement.scale[0] < 0, itemPlacement.scale[1] < 0);
 }
 
-const categoryTemplate = document.getElementById("categoryTemplate");
-const template = document.getElementById("itemTemplate");
-for (const category of Object.keys(shopCategories)) {
-
-	let newCategory = categoryTemplate.cloneNode(true);
-	newCategory.id = "category-" + category;
-	newCategory.classList.remove("hidden");
-	newCategory.innerHTML = category;
-	template.parentElement.appendChild(newCategory);
-
-	for (const obj of shopCategories[category]) {
-		let info = objectInfo[obj];
-		let newItem = template.cloneNode(true);
-		newItem.id = "item-" + obj;
-		newItem.classList.remove("hidden");
-		template.parentElement.appendChild(newItem);
-
-		let imageName = obj;
-		if (info.customImage) {
-			imageName = info.customImage;
-		}
-
-		let img = newItem.childNodes[1];
-		let btn = newItem.childNodes[3];
-		if (info.broken) {
-			newItem.childNodes[5].classList.remove("hidden");
-			btn.disabled = true;
-		}
-		img.src = "/placeables/" + imageName + ".png";
-
-		if (info.shopCrop) {
-			img.style.marginTop = -info.shopCrop[0] + "px";
-			img.style.marginBottom = -info.shopCrop[1] + "px";
-		}
-
-		btn.addEventListener("click", () => {
-			if (!objectInfo[obj].broken) {
-				buyItem(obj);
-			}
-		});
-		btn.innerHTML = getItemPrice(obj) + " &#x1FA99;";
-
-		itemShops.push({
-			"item": obj,
-			"image": img,
-			"button": btn,
-		});
-	}
-}
-
 function getItemPrice(obj) {
-	return 10;
+	if (prices[obj]) {
+		return prices[obj];
+	}
+	return null;
 }
 
 function setCoins(newCoins) {
 	coins = newCoins;
 	for (const shop of itemShops) {
-		shop.button.disabled = shop.broken || coins < getItemPrice(shop.item);
+		shop.button.disabled = objectInfo[shop.item].broken || getItemPrice(shop.item) == null || coins < getItemPrice(shop.item);
 	}
 	if (coins < 0) {
 		coinCount.innerHTML = "&infin; &#x1FA99;";
 	} else {
 		coinCount.innerHTML = coins + " &#x1FA99;";
 	}
+	updateAllItemShopVisibility();
 }
 
 setCoins(0);
@@ -909,6 +992,7 @@ function connectToRoom(room) {
 
 	socket.on("canPlaceItems", (value) => {
 		canPlaceItems = value;
+		endItemPlacement();
 		updateCantBuildText();
 	});
 
@@ -919,6 +1003,13 @@ function connectToRoom(room) {
 			clearInterval(countdownInterval);
 		}
 		countdownInterval = setInterval(updateCantBuildText, 1000);
+	});
+
+	socket.on("setPrices", (newPrices) => {
+		prices = newPrices;
+		for (const itemShop of itemShops) {
+			updateItemShop(itemShop);
+		}
 	});
 }
 
@@ -941,14 +1032,28 @@ function updatePlaceable(serializedObj) {
 		placeable.data = serializedObj.data;
 	} else {
 		// Create a new image for this
+		let validName = serializedObj.name;
+		if (!objectInfo[validName]) {
+			for (const possibleObjName of Object.keys(objectInfo)) {
+				const possibleObj = objectInfo[possibleObjName];
+				if (possibleObj.alternateNames) {
+					if (possibleObj.alternateNames.includes(validName)) {
+						validName = possibleObjName;
+						console.log(validName);
+						break;
+					}
+				}
+			}
+		}
+
 		image = document.createElement("img");
 		image.id = serializedObj.id;
-		image.src = "/placeables/" + serializedObj.name + ".png";
+		image.src = "/placeables/" + validName + ".png";
 		parent.appendChild(image);
 
 		placeable = {
 			"id": serializedObj.id,
-			"name": serializedObj.name,
+			"name": validName,
 			"image": image,
 			"data": serializedObj.data,
 		};
@@ -1038,7 +1143,7 @@ function updatePlaceable(serializedObj) {
 			}
 		}
 
-	} else if (objectInfo["FerrisWheel"].alternateNames.includes(placeable.name)) {
+	} else if (placeable.name == "FerrisWheel") {
 		let newPlatforms = placeable.data.platforms;
 		const platformOffsets = [[2, -3], [-3, -3], [-3, 2], [2, 2]];
 
@@ -1063,7 +1168,6 @@ function updatePlaceable(serializedObj) {
 				platform.style.top = ((((-(pos[1] - level.coordOrigin[1]) + platformOffsets[i][1]) * level.scale) + level.pixelOrigin[1]) * screenScaleY) + "%";
 				platform.style.width = ((platform.naturalWidth / 70) * level.scale * screenScaleX) + "%";
 				platform.style.height = ((platform.naturalHeight / 70) * level.scale * screenScaleY) + "%";
-				// platform.style.transform = "rotate(" + -rot + "deg) scale(" + scale[0] + "," + scale[1] + ")";
 
 				if (level.customImageFunction) {
 					level.customImageFunction(platform);

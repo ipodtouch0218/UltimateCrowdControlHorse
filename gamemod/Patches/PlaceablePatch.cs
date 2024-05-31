@@ -10,30 +10,43 @@ namespace UltimateCrowdControlHorse.Patches {
         [HarmonyPatch("Place", new Type[] { typeof(int), typeof(bool), typeof(bool) })]
         [HarmonyPostfix]
         public static void Place_Postfix(Placeable __instance) {
+            if (CrowdControlMod.socketLogging.Value) {
+                CrowdControlMod.Instance.log.LogInfo($"[Place] __instance.name {__instance.ID}");
+            }
             UpdatePlaceable(__instance);
         }
 
         [HarmonyPatch("PickUp")]
         [HarmonyPostfix]
         public static void PickUp_Postfix(Placeable __instance) {
-            CrowdControlMod.Instance.log.LogInfo(__instance.ID + " - Pickup()");
+            if (CrowdControlMod.socketLogging.Value) {
+                CrowdControlMod.Instance.log.LogInfo($"[PickUp] __instance.name {__instance.ID}");
+            }
             RemovePlaceable(__instance);
         }
 
         [HarmonyPatch("OnDestroy")]
         [HarmonyPostfix]
         public static void OnDestroy_Postfix(Placeable __instance) {
-            CrowdControlMod.Instance.log.LogInfo(__instance.ID + " - OnDestroy()");
+            if (CrowdControlMod.socketLogging.Value) {
+                CrowdControlMod.Instance.log.LogInfo($"[OnDestroy] __instance.name {__instance.ID}");
+            }
             RemovePlaceable(__instance);
         }
 
         public static void UpdatePlaceable(Placeable p) {
             if (!SerializedPlaceable.IsValid(p)) {
                 // Not eligable; not a real placed item (or is a map element)
-                CrowdControlMod.Instance.log.LogInfo($"{p.name} ({p.Name}) is not eligable {!p.Placed} || {p.PickedUp} || {p.isSetPiece} || {!p.Enabled}!");
+                if (p.GetComponentInParent<FerrisWheel>() is FerrisWheel fw) {
+                    // Update ferris wheel platforms via the parent.
+                    p = fw;
+                    CrowdControlMod.Instance.log.LogInfo("Logging a platform!!");
+                    goto updateAnyway;
+                }
                 return;
             }
 
+            updateAnyway:
             CrowdControlMod.Instance.pendingUpdates.Add(new SerializedPlaceable(p));
         }
 
@@ -44,7 +57,7 @@ namespace UltimateCrowdControlHorse.Patches {
 
         public static void UpdateAllPlaceables() {
             List<SerializedPlaceable> allPlaceables = Placeable.AllPlaceables
-                .Where(p => SerializedPlaceable.IsValid(p))
+                .Where(SerializedPlaceable.IsValid)
                 .Select(p => new SerializedPlaceable(p)) // THIS works... but .Cast<> doesnt. yeah.
                 .ToList();
 
