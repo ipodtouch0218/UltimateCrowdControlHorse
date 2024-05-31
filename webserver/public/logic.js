@@ -673,8 +673,6 @@ function updateAllItemShopVisibility() {
 		}
 	}
 
-	console.log(validCategories);
-
 	for (const category of Object.keys(shopCategories)) {
 		const categoryNode = document.getElementById("category-" + category);
 		if (validCategories.includes(category)) {
