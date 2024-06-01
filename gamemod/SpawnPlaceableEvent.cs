@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 namespace UltimateCrowdControlHorse {
     public class SpawnPlaceableEvent : MessageBase {
 
-        public static short EventId = short.MinValue + 654;
+        public static short EventId = 654;
 
         public string PrefabName;
         public Vector2 Location;
@@ -13,6 +13,7 @@ namespace UltimateCrowdControlHorse {
         public bool FlipY;
 
         public override void Serialize(NetworkWriter writer) {
+            writer.WritePackedUInt32(1);
             writer.Write(PrefabName);
             writer.Write(Location);
             writer.Write(Rotation);
@@ -21,6 +22,7 @@ namespace UltimateCrowdControlHorse {
         }
 
         public override void Deserialize(NetworkReader reader) {
+            reader.ReadPackedUInt32();
             PrefabName = reader.ReadString();
             Location = reader.ReadVector2();
             Rotation = reader.ReadInt32();

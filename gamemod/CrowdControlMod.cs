@@ -178,7 +178,6 @@ namespace UltimateCrowdControlHorse {
                 return;
             }
 
-            log.LogInfo($"partybox: {vc.PartyBox}");
             vc.PartyBox.ComputeEffectiveBlockWeights();
 
             if (currentBlockWeightsField == null) {
@@ -187,9 +186,7 @@ namespace UltimateCrowdControlHorse {
             }
 
             WeightedBlockList blockList = (WeightedBlockList) currentBlockWeightsField.GetValue(vc.PartyBox);
-            log.LogInfo($"blockList: {blockList}");
             WeightedBlockList.WeightedBlock[] blocks = (WeightedBlockList.WeightedBlock[]) weightedBlocksField.GetValue(blockList);
-            log.LogInfo($"blocks: {blocks}");
 
             // Sort blocks by our own placeables (to remove honey / invalid variants?)
             List<SerializedWeightedBlock> customBlocks = blocks
@@ -244,7 +241,8 @@ namespace UltimateCrowdControlHorse {
                     FlipX = flipX,
                     FlipY = flipY,
                 };
-                NetworkManager.singleton.client.Send(SpawnPlaceableEvent.EventId, msgPlaceableSpawned);
+                log.LogInfo("SENDING!!!!!!!!!!!!!!!!!!!!!!\n\n");
+                NetworkServer.SendToAll(SpawnPlaceableEvent.EventId, msgPlaceableSpawned);
                 LobbyManager.instance.CurrentGameController.SpawnNetSurrogate(piece.ID);
 
                 if (socketLogging.Value) {

@@ -103,7 +103,7 @@ socketServer.on("connection", (socket) => {
 
         let coins = -1;
         if (!gameData[socket.room].unlimitedCoins) {
-            if (gameClients[socket.room].length <= 0) {
+            if (!gameClients[socket.room] || gameClients[socket.room].length <= 0) {
                 coins = gameData[socket.room].coinSettings.totalCoins;
             } else {
                 coins = Math.ceil(Math.max(gameData[socket.room].coinSettings.minCoins, gameData[socket.room].coinSettings.totalCoins / gameClients[socket.room].length));
@@ -157,8 +157,8 @@ socketServer.on("connection", (socket) => {
         gameData[socket.room].coinsPerClient = minCoins;
 
         for (const index in gameClients[socket.room]) {
-            if (gameClients[index].coins == null) {
-                gameClients[index].coins = minCoins;
+            if (gameClients[socket.room][index].coins == null) {
+                gameClients[socket.room][index].coins = minCoins;
             }
         }
     });

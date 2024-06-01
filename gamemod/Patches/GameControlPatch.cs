@@ -33,7 +33,14 @@ namespace UltimateCrowdControlHorse.Patches {
         [HarmonyPatch("handleEvent", new Type[] { typeof(GameEvent.GameEvent) })]
         [HarmonyPostfix]
         public static void handleEvent_Postfix(GameControl __instance, GameEvent.GameEvent e) {
-            if (!(e is NetworkMessageReceivedEvent nmre) || !(nmre.ReadMessage is SpawnPlaceableEvent spe)) {
+
+            if (!(e is NetworkMessageReceivedEvent nmre)) {
+                return;
+            }
+            if (!(nmre.ReadMessage is SpawnPlaceableEvent spe)) {
+                return;
+            }
+            if (__instance.hasAuthority) {
                 return;
             }
 

@@ -1,4 +1,7 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Reflection;
+using HarmonyLib;
+using UnityEngine.Networking;
 
 namespace UltimateCrowdControlHorse.Patches {
     [HarmonyPatch(typeof(LobbyManager))]
@@ -28,6 +31,32 @@ namespace UltimateCrowdControlHorse.Patches {
             if (__instance == currentLobbyManager) {
                 CrowdControlMod.Instance.DisconnectFromWebserver();
                 currentLobbyManager = null;
+            }
+        }
+
+        [HarmonyPatch("readMessage", new Type[] {typeof(NetworkMessage)} )]
+        [HarmonyPrefix]
+        public static bool readMessage_Prefix(NetworkMessage msg, ref MessageBase __result) {
+            if (msg.msgType == SpawnPlaceableEvent.EventId) {
+                __result = msg.ReadMessage<SpawnPlaceableEvent>();
+
+                CrowdControlMod.Instance.log.LogInfo(NetworkServer.handlers[654]);
+                return false;
+            }
+
+            return true;
+        }
+
+        [HarmonyPatch(nameof(LobbyManager.Connect))]
+        [HarmonyPostfix]
+        public static void Connect(LobbyManager __instance) {
+
+            MethodInfo method = typeof(LobbyManager).GetMethod("distributeMessage", BindingFlags.Instance | BindingFlags.NonPublic);
+            Action<NetworkMessage> del = (Action<NetworkMessage>) Delegate.CreateDelegate(typeof(Action<NetworkMessage>), __instance, method);
+
+            NetworkServer.RegisterHandler(SpawnPlaceableEvent.EventId, new NetworkMessageDelegate(del));
+            if (__instance.client != null) {
+                __instance.client.RegisterHandler(SpawnPlaceableEvent.EventId, new NetworkMessageDelegate(del));
             }
         }
     }

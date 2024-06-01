@@ -469,6 +469,7 @@ const objectInfo = {
 		"rotateOffset": [0, 0],
 		"customImage": "FerrisWheelWithPlatforms",
 		"scrollAction": "flipX",
+		"scrollShiftAction": "rotate",
 		"broken": false,
 		"alternateNames": ["FerrisWheel", "Ferris Wheel"],
 	},
