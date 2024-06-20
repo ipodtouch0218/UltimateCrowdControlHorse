@@ -240,6 +240,7 @@ namespace UltimateCrowdControlHorse {
                     Rotation = rotation,
                     FlipX = flipX,
                     FlipY = flipY,
+                    ID = piece.ID,
                 };
                 log.LogInfo("SENDING!!!!!!!!!!!!!!!!!!!!!!\n\n");
                 NetworkServer.SendToAll(SpawnPlaceableEvent.EventId, msgPlaceableSpawned);
@@ -260,7 +261,7 @@ namespace UltimateCrowdControlHorse {
             }
         }
 
-        public Placeable SpawnPlaceable(string pieceName, Vector2 location, int rotation, bool flipX, bool flipY) {
+        public Placeable SpawnPlaceable(string pieceName, Vector2 location, int rotation, bool flipX, bool flipY, int? id = null) {
 
             if (pieceName == "Barbed Wire") {
                 pieceName = "Barbed Wire x1";
@@ -269,6 +270,10 @@ namespace UltimateCrowdControlHorse {
             Placeable piecePrefab = placeablePrefabs.First(p => p.Name == pieceName);
             Placeable piece = Instantiate(piecePrefab);
             piece.SwitchColliderTo(ColliderModeEnum.PlacementPhase);
+
+            if (id.HasValue) {
+                piece.ID = id.Value;
+            }
 
             switch (piece) {
                 case FerrisWheel w:
@@ -290,7 +295,5 @@ namespace UltimateCrowdControlHorse {
 
             return piece;
         }
-
-
     }
 }

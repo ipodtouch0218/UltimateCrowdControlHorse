@@ -28,7 +28,7 @@ const gameSockets = socketServer.of("/game");
 const webSockets = socketServer.of("/web");
 
 socketServer.on("connection", (socket) => {
-    console.log("New incoming GAME connection from " + socket.id);
+    console.log();
 
     socket.on("disconnect", (reason) => {
         gameData[socket.room] = null;
@@ -37,6 +37,7 @@ socketServer.on("connection", (socket) => {
     });
 
     socket.on("join", (room) => {
+        console.log("New incoming GAME connection from " + socket.id + " (" + room + ")");
         socket.join(room);
         socket.emit("joinedroom", room);
         socket.room = room;
@@ -98,6 +99,7 @@ socketServer.on("connection", (socket) => {
     }
 
     socket.on("startGame", (newLevelName) => {
+        console.log("GAME STARTING " + socket.room);
         gameData[socket.room].level = newLevelName;
         webSockets.to(socket.room).emit("changeLevel", newLevelName);
 
@@ -183,7 +185,7 @@ socketServer.on("connection", (socket) => {
 });
 
 webSockets.on("connection", (socket) => {
-    console.log("New incoming CLIENT connection from " + socket.id);
+    console.log("New incoming CLIENT connection from " + socket.id + " IP " + socket.handshake.address);
 
     socket.on("join", (room) => {
         socket.join(room);
@@ -194,13 +196,13 @@ webSockets.on("connection", (socket) => {
             gameClients[room] = [];
         }
 
-        let ourRoomDataIndex = gameClients[room].findIndex(e => e.ip == socket.ip);
+        let ourRoomDataIndex = gameClients[room].findIndex(e => e.ip == socket.handshake.address);
         if (ourRoomDataIndex < 0) {
             ourRoomData = {
-                "ip": socket.handshake.ip,
+                "ip": socket.handshake.address,
                 "ids": [socket.id],
                 "sockets": [socket],
-                "coins": null,
+                "coins": 100,
                 "cooldown": 0,
             };
             if (gameData[room] && gameData[room].coinsPerClient != null) {
@@ -233,7 +235,7 @@ webSockets.on("connection", (socket) => {
 
     socket.on("placeItem", (obj, posX, posY, rotation, flipX, flipY) => {
         let roomData = gameData[socket.room];
-        let clientIndex = gameClients[socket.room].findIndex(e => e.ip == socket.ip);
+        let clientIndex = gameClients[socket.room].findIndex(e => e.ip == socket.handshake.address);
         let clientData = gameClients[socket.room][clientIndex];
 
         const price = roomData.prices[obj];

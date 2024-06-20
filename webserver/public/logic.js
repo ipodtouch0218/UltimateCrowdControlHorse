@@ -146,7 +146,7 @@ const levelInfo = {
 		"pixelOrigin": [182, 470],
 		"gridSize": [76, 17],
 		"coordOrigin": [-31, 17],
-		"scale": 2210 / 76,
+		"scale": 2209 / 76,
 	},
 	"template": {
 		"pixelOrigin": [0, 0],

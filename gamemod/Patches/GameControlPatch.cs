@@ -47,7 +47,12 @@ namespace UltimateCrowdControlHorse.Patches {
             if (CrowdControlMod.socketLogging.Value) {
                 CrowdControlMod.Instance.log.LogInfo($"[SOCKET] Incoming SpawnPlaceableEvent: {spe}");
             }
-            CrowdControlMod.Instance.SpawnPlaceable(spe.PrefabName, spe.Location, spe.Rotation, spe.FlipX, spe.FlipY);
+            Placeable placeable = CrowdControlMod.Instance.SpawnPlaceable(spe.PrefabName, spe.Location, spe.Rotation, spe.FlipX, spe.FlipY, spe.ID);
+            placeable.ID = spe.ID;
+            placeable.UpdateChildIDs();
+            placeable.SwitchColliderTo(ColliderModeEnum.PlacementPhase);
+
+            __instance.StartCoroutine("initialPlacement");
         }
     }
 }
