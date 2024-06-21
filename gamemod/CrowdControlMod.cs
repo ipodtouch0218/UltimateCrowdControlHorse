@@ -242,7 +242,6 @@ namespace UltimateCrowdControlHorse {
                     FlipY = flipY,
                     ID = piece.ID,
                 };
-                log.LogInfo("SENDING!!!!!!!!!!!!!!!!!!!!!!\n\n");
                 NetworkServer.SendToAll(SpawnPlaceableEvent.EventId, msgPlaceableSpawned);
                 LobbyManager.instance.CurrentGameController.SpawnNetSurrogate(piece.ID);
 

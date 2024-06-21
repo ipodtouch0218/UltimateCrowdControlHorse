@@ -3,5 +3,6 @@
 /gamemod/bin
 /gamemod/obj
 /gamemod/packages
+/gamemod/thunderstore
 /webserver/node_modules
 /webserver/package-lock.json
