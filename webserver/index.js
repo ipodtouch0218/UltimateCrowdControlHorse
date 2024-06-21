@@ -24,7 +24,6 @@ const socketServer = new Server(httpServer, {
 const gameData = {};
 const gameClients = {};
 
-const gameSockets = socketServer.of("/game");
 const webSockets = socketServer.of("/web");
 
 socketServer.on("connection", (socket) => {
@@ -37,6 +36,7 @@ socketServer.on("connection", (socket) => {
     });
 
     socket.on("join", (room) => {
+        room = room.toUpperCase();
         console.log("New incoming GAME connection from " + socket.id + " (" + room + ")");
         socket.join(room);
         socket.emit("joinedroom", room);
@@ -60,6 +60,8 @@ socketServer.on("connection", (socket) => {
             };
             gameData[room] = data;
         }
+
+        webSockets.to(socket.room).emit("hostConnected");
     });
 
     socket.on("updatePlaceables", (placeables) => {
@@ -188,8 +190,9 @@ webSockets.on("connection", (socket) => {
     console.log("New incoming CLIENT connection from " + socket.id + " IP " + socket.handshake.address);
 
     socket.on("join", (room) => {
+        room = room.toUpperCase();
         socket.join(room);
-        socket.emit("joinedroom", room);
+        socket.emit("joinedroom", Boolean(gameData[room]));
         socket.room = room;
 
         if (!gameClients[room]) {

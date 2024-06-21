@@ -68,8 +68,14 @@ h1 {
 
 .page-footer {
     flex: 0 0 auto;
+    display: flex;
+    justify-content: space-between;
     background-color: #111;
     padding: 10px;
+}
+
+.page-footer .right-aligned {
+    text-align: right;
 }
 
 .container {

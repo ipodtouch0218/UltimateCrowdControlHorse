@@ -10,6 +10,7 @@ var socket = null;
 const pageJoinRoom = document.getElementById("pageJoinRoom");
 const pageConnecting = document.getElementById("pageConnecting");
 const pageInRoomWaiting = document.getElementById("pageInRoomWaiting");
+const pageWaitingForHost = document.getElementById("pageWaitingForHost");
 const pageInGame = document.getElementById("pageInGame");
 
 const levelInfo = {
@@ -942,10 +943,18 @@ function connectToRoom(room) {
 		socket.emit("join", room);
 	});
 
-	socket.on("joinedroom", (roomState) => {
-		showPage(pageInRoomWaiting);
+	socket.on("joinedroom", (roomHasHost) => {
+		if (roomHasHost) {
+			showPage(pageInRoomWaiting);
+		} else {
+			showPage(pageWaitingForHost);
+		}
 		document.title = room + " | Ultimate Crowd Control Horse";
 		window.history.pushState(null, document.title, "/" + room);
+	});
+
+	socket.on("hostConnected", () => {
+		showPage(pageInRoomWaiting);
 	});
 
 	socket.on("updatePlaceables", (objects) => {
