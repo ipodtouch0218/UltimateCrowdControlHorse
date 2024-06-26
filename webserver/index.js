@@ -187,7 +187,9 @@ socketServer.on("connection", (socket) => {
 });
 
 webSockets.on("connection", (socket) => {
-    console.log("New incoming CLIENT connection from " + socket.id + " IP " + socket.handshake.address);
+    let addr = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address
+    socket.ipaddress = addr
+    console.log("New incoming CLIENT connection from " + socket.id + " IP " + socket.ipaddress);
 
     socket.on("join", (room) => {
         room = room.toUpperCase();
@@ -199,10 +201,10 @@ webSockets.on("connection", (socket) => {
             gameClients[room] = [];
         }
 
-        let ourRoomDataIndex = gameClients[room].findIndex(e => e.ip == socket.handshake.address);
+        let ourRoomDataIndex = gameClients[room].findIndex(e => e.ip == socket.ipaddress);
         if (ourRoomDataIndex < 0) {
             ourRoomData = {
-                "ip": socket.handshake.address,
+                "ip": socket.ipaddress,
                 "ids": [socket.id],
                 "sockets": [socket],
                 "coins": 100,
@@ -238,7 +240,7 @@ webSockets.on("connection", (socket) => {
 
     socket.on("placeItem", (obj, posX, posY, rotation, flipX, flipY) => {
         let roomData = gameData[socket.room];
-        let clientIndex = gameClients[socket.room].findIndex(e => e.ip == socket.handshake.address);
+        let clientIndex = gameClients[socket.room].findIndex(e => e.ip == socket.ipaddress);
         let clientData = gameClients[socket.room][clientIndex];
 
         const price = roomData.prices[obj];
