@@ -189,7 +189,7 @@ socketServer.on("connection", (socket) => {
 
 webSockets.on("connection", (socket) => {
     let addr = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
-    addr = addr.split(":");
+    addr = addr.split(":")[0];
     socket.ipaddress = addr
     console.log("New incoming CLIENT connection from " + socket.id + " IP " + socket.ipaddress);
 
