@@ -159,7 +159,7 @@ socketServer.on("connection", (socket) => {
         gameData[socket.room].coinSettings.maxPrice = maxPrice;
         gameData[socket.room].coinSettings.unlimitedCoins = unlimitedCoins;
 
-        gameData[socket.room].coinsPerClient = minCoins;
+        gameData[socket.room].coinsPerClient = minCoins * 2.5;
 
         for (const index in gameClients[socket.room]) {
             if (gameClients[socket.room][index].coins == null) {
