@@ -70,7 +70,8 @@ socketServer.on("connection", (socket) => {
         gameData[socket.room].placeables = gameData[socket.room].placeables.filter(e => !ids.includes(e.id));
         gameData[socket.room].placeables = gameData[socket.room].placeables.concat(placeables);
         // Forward to client
-        webSockets.to(socket.room).emit("updatePlaceables", placeables);
+        // webSockets.to(socket.room).emit("updatePlaceables", placeables);
+        webSockets.to(socket.room).emit("updateAllPlaceables", placeables);
     });
 
     socket.on("removePlaceables", (ids) => {
