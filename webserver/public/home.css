@@ -21,23 +21,6 @@ a:hover {
     color: #ff82b8;
 }
 
-#reference {
-    color: #fff !important;
-}
-
-
-.nocolor {
-    color: #fff;
-}
-
-#secret {
-    display: none;
-}
-
-#reference:hover + #secret {
-    display: inline;
-}
-
 h1 {
     font-size: x-large;
 }
@@ -50,8 +33,20 @@ h1 {
 
 .page-header {
     flex: 0 0 auto;
+    position: relative;
     background-color: #111;
     text-align: center;
+    vertical-align: middle;
+    width: 100%;
+}
+
+.page-header > span {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: left;
+    font-size: larger;
 }
 
 .page-content {

@@ -387,7 +387,7 @@ namespace SocketIOClient {
             }
         }
 
-        private void ErrorMessageHandler(ErrorMessage msg)
+        private void ErrorMessageHandler(SocketIOClient.Messages.ErrorMessage msg)
         {
             OnError?.Invoke(this, msg.Message);
         }
@@ -462,7 +462,7 @@ namespace SocketIOClient {
                         AckMessageHandler(msg as ClientAckMessage);
                         break;
                     case MessageType.ErrorMessage:
-                        ErrorMessageHandler(msg as ErrorMessage);
+                        ErrorMessageHandler(msg as SocketIOClient.Messages.ErrorMessage);
                         break;
                     case MessageType.BinaryMessage:
                         BinaryMessageHandler(msg as BinaryMessage);

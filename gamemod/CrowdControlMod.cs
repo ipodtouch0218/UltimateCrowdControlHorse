@@ -29,6 +29,7 @@ namespace UltimateCrowdControlHorse {
         public static ConfigEntry<int> totalCoins;
         public static ConfigEntry<int> minPrice;
         public static ConfigEntry<int> maxPrice;
+        public static ConfigEntry<int> additionalCoinsPerRound;
         public static ConfigEntry<bool> unlimitedCoins;
 
         //---Static
@@ -39,6 +40,7 @@ namespace UltimateCrowdControlHorse {
 
         //---Variables
         public ManualLogSource log;
+        public string room;
 
         public readonly List<SerializedPlaceable> pendingUpdates = new List<SerializedPlaceable>();
         public readonly List<int> pendingRemovals = new List<int>();
@@ -66,6 +68,7 @@ namespace UltimateCrowdControlHorse {
             totalCoins = Config.Bind("Gameplay", "totalCoins", 1000, "The total number of coins the chat splits in a single game.");
             minPrice = Config.Bind("Gameplay", "minPrice", 25, "The minimum price an object can have (based on spawning chances)");
             maxPrice = Config.Bind("Gameplay", "maxPrice", 100, "The maximum price an object can have (based on spawning chances)");
+            additionalCoinsPerRound = Config.Bind("Gameplay", "additionalCoinsPerRound", 15, "Gives chatters more coins every round, in case they can't manage their own money...");
             unlimitedCoins = Config.Bind("Gameplay", "unlimitedCoins", false, "Gives chatters unlimited coins to spend on placing items.");
 
             socketLogging = Config.Bind("Debug", "socketLogging", false, "Logs additional information about the websocket connection to the console");
@@ -101,7 +104,7 @@ namespace UltimateCrowdControlHorse {
                 SendSocketMessage("join", roomId);
                 SendSocketMessage("changeLevel", currentLevel);
                 SendSocketMessage("canPlaceItems", currentLevel != null && (inEditMode || canBuildInPlayMode.Value));
-                SendSocketMessage("setCoinSettings", minCoins.Value, totalCoins.Value, minPrice.Value, maxPrice.Value, unlimitedCoins.Value);
+                SendSocketMessage("setCoinSettings", minCoins.Value, totalCoins.Value, minPrice.Value, maxPrice.Value, unlimitedCoins.Value, additionalCoinsPerRound.Value);
                 UpdatePlaceableSpawnChances();
                 PlaceablePatch.UpdateAllPlaceables();
             };
@@ -123,6 +126,10 @@ namespace UltimateCrowdControlHorse {
                 }
 
                 StartCoroutine(PlacePieceFromNetwork(clientId, objName, new Vector2(x, y), rotation, flipX, flipY));
+            });
+
+            socket.On("joinedroom", (response) => {
+                room = response.GetValue<string>(0);
             });
 
             log.LogInfo("Attempting to connect to the UccH webserver...");
@@ -163,6 +170,7 @@ namespace UltimateCrowdControlHorse {
         public void ToEditMode() {
             inEditMode = true;
             SendSocketMessage("canPlaceItems", inEditMode || canBuildInPlayMode.Value);
+            SendSocketMessage("toEditMode");
             UpdatePlaceableSpawnChances();
         }
 

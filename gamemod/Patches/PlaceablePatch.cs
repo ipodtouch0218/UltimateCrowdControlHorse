@@ -40,7 +40,6 @@ namespace UltimateCrowdControlHorse.Patches {
                 if (p.GetComponentInParent<FerrisWheel>() is FerrisWheel fw) {
                     // Update ferris wheel platforms via the parent.
                     p = fw;
-                    CrowdControlMod.Instance.log.LogInfo("Logging a platform!!");
                     goto updateAnyway;
                 }
                 return;

@@ -1,8 +1,27 @@
 const roomField = document.getElementById("roomIdField");
 const submitButton = document.getElementById("roomIdSubmit");
 
+function joinRoom(code) {
+	if (/^[a-zA-Z]{6}$/.test(roomField.value)) {
+		location.href = '/' + roomField.value.toUpperCase();
+		return true;
+	} else {
+		return false;
+	}
+}
+
 submitButton.addEventListener("click", () => {
-	connectToRoom(roomField.value);
+	if (!joinRoom(roomField.value)) {
+		alert("Please enter a valid room code!")
+	}
+});
+
+let previousRoomValue = roomField.value;
+roomField.addEventListener("input", (event) => {
+	if (/^[a-zA-Z]{0,6}$/.test(roomField.value)) {
+		previousValue = roomField.value;
+	}
+	roomField.value = previousValue.toUpperCase();
 });
 
 let prices = {};
@@ -599,7 +618,7 @@ function updateItemShop(itemShop) {
 		itemShop.image.style.marginBottom = -info.shopCrop[1] + "px";
 	}
 
-	itemShop.button.innerHTML = getItemPrice(obj) + " &#x1FA99;";
+	itemShop.button.childNodes[0].innerHTML = "" + getItemPrice(obj);
 }
 
 const categoryTemplate = document.getElementById("categoryTemplate");
@@ -888,9 +907,9 @@ function setCoins(newCoins) {
 		shop.button.disabled = objectInfo[shop.item].broken || getItemPrice(shop.item) == null || coins < getItemPrice(shop.item);
 	}
 	if (coins < 0) {
-		coinCount.innerHTML = "&infin; &#x1FA99;";
+		coinCount.innerHTML = "&infin;";
 	} else {
-		coinCount.innerHTML = coins + " &#x1FA99;";
+		coinCount.innerHTML = coins;
 	}
 	updateAllItemShopVisibility();
 }
@@ -898,7 +917,7 @@ function setCoins(newCoins) {
 setCoins(0);
 
 function hideAllPages() {
-	let pages = [pageJoinRoom, pageConnecting, pageInRoomWaiting, pageInGame];
+	let pages = [pageJoinRoom, pageConnecting, pageInRoomWaiting, pageWaitingForHost, pageInGame];
 	for (const page of pages) {
 		page.classList.add("hidden");
 	}
@@ -950,7 +969,10 @@ function connectToRoom(room) {
 			showPage(pageWaitingForHost);
 		}
 		document.title = room + " | Ultimate Crowd Control Horse";
-		window.history.pushState(null, document.title, "/" + room);
+	});
+
+	socket.on("updateConnectedUsers", (amount) => {
+		document.getElementById("connectionInfo").innerHTML = amount;
 	});
 
 	socket.on("hostConnected", () => {
@@ -1223,21 +1245,12 @@ function updateAllPlaceables(objects) {
 	}
 }
 
-window.onpopstate = function (event) {
-	if (socket != null) {
-		socket.disconnect();
-		socket = null;
+if (instaJoinRoom && /^[a-zA-Z]{6}$/.test(instaJoinRoom)) {
+	connectToRoom(instaJoinRoom.toUpperCase());
+	window.history.replaceState(null, null, '/' + instaJoinRoom.toUpperCase());
+} else {
+	showPage(pageJoinRoom);
+	if (instaJoinRoom) {
+		window.history.replaceState(null, null, '/');
 	}
-	if (event.state == null) {
-		// Return to the homepage...
-		showPage(pageJoinRoom);
-		document.title = "Ultimate Crowd Control Horse";
-	} else {
-		// Joining a room...
-		connectToRoom(event.state);
-	}
-}
-
-if (instaJoinRoom) {
-	connectToRoom(instaJoinRoom);
 }

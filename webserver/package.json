@@ -10,8 +10,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
+    "font-awesome": "^4.7.0",
     "http": "^0.0.1-security",
     "jquery": "^3.7.1",
     "pug": "^3.0.3",

@@ -3,22 +3,26 @@
 	<head>
 		<title>Ultimate Crowd Control Horse</title>
 		<link rel="stylesheet" href="/home.css" />
-		<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" /><script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 	</head>
 	<body>
 		<div class="page-container">
 			<div class="page-header">
-				<h1>Ultimate Crowd Control Horse</h1>
+				<span>
+					<i class="fa-solid fa-user"></i>
+					<span id="connectionInfo">X</span>
+				</span>
+				<img src="/ui/Logo.png" style="height: 50px;" />
 			</div>
 			<div class="page-content">
 				<div id="pageJoinRoom" class="container">
 					<label>Enter a Room ID to join:</label>
-					<input id="roomIdField" pattern="[A-Z]" />
+					<input id="roomIdField" />
 					<button id="roomIdSubmit">Submit</button>
 				</div>
 
 				<div id="pageConnecting" class="container hidden">
-					<p>Connecting to room...</p>
+					<p>Connecting...</p>
 				</div>
 
 				<div id="pageInRoomWaiting" class="container hidden">
@@ -27,8 +31,9 @@
 				</div>
 
 				<div id="pageWaitingForHost" class="container hidden">
-					<p>You have connected to the room, but no one is hosting in this room...</p>
-					<p>Please wait for a host to connect</p>
+					You've entered a valid room code; but the room does not exist...<br>
+					Maybe make sure that you've entered the right room code?
+					<p style="color: #282828">(Did they give you the wrong room code...?)</p>
 				</div>
 
 				<div id="pageInGame" class="container hidden">
@@ -46,7 +51,10 @@
 						<button id="sidepanelOpen" class="openbtn togglebutton" onclick="toggleItemPanel()">&#xAB;</button>
 						<div class="content">
 							<div class="header">
-								<p id="coin-count">1000 &#x1FA99;</p>
+								<p>
+									<span id="coin-count">1000</span>
+									<i class="fa-solid fa-coins"></i>
+								</p>
 								<span>
 									<button id="show-purchasableOnly" onclick="togglePurchasableOnly()">Purchasable Only</button>
 								</span>
@@ -55,7 +63,7 @@
 								<p id="categoryTemplate" class="label hidden">Category</p>
 								<div id="itemTemplate" class="item hidden">
 									<img src="/placeables/Block.png" />
-									<button>10 &#x1FA99;</button>
+									<button><span>10</span> <i class="fa-solid fa-coins"></i></button>
 									<img class="broken hidden" src="/ui/Broken.png" />
 								</div>
 							</div>
@@ -64,8 +72,8 @@
 				</div>
 			</div>
 			<div class="page-footer">
-				<span>Made by <a href="https://github.com/ipodtouch0218">ipodtouch0218</a>, with <a id="reference" class="nocolor">love.</a><p id="secret"> (The normal kind, not L&Ouml;VE...)</p></span>
-				<span class="right-aligned">Source code available <a href="https://github.com/ipodtouch0218/UltimateCrowdControlHorse">on GitHub</a></span>
+				<span>Made by <a href="https://github.com/ipodtouch0218" target=”_blank”>ipodtouch0218</a>, Logo design by <a href="https://twitter.com/TheBluePixeling" target=”_blank”>TheBluePixeling</a></span>
+				<span class="right-aligned">Source code available <a href="https://github.com/ipodtouch0218/UltimateCrowdControlHorse" target=”_blank”>on GitHub</a></span>
 			</div>
 		</div>
 

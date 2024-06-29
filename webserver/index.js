@@ -26,8 +26,34 @@ const gameClients = {};
 
 const webSockets = socketServer.of("/web");
 
+function hashCode(string) {
+    var hash = 0;
+    for (var i = 0; i < string.length; i++) {
+        var code = string.charCodeAt(i);
+        hash = ((hash << 5) - hash) + code;
+        hash = hash & hash;
+    }
+    return hash;
+}
+function generateAnonymousRoomCode(seed) {
+    let hash = Math.abs(hashCode(seed)).toString(26);
+    let result = ""
+    for (let i = 0; i < hash.length; i++) {
+        let x = hash.charCodeAt(i);
+        if (x >= 48 && x <= 58) {
+            result += String.fromCharCode(x + 17);
+        } else {
+            result += String.fromCharCode(x + 10);
+        }
+    }
+    result = result.toUpperCase();
+    while (result.length < 6) {
+        result += 'Z';
+    }
+    return result.substring(0, 6);
+}
+
 socketServer.on("connection", (socket) => {
-    console.log();
 
     socket.on("disconnect", (reason) => {
         gameData[socket.room] = null;
@@ -36,8 +62,19 @@ socketServer.on("connection", (socket) => {
     });
 
     socket.on("join", (room) => {
+
+        let addr = null;
+        let forwarded = socket.handshake.headers['x-forwarded-for']
+        if (forwarded) {
+            addr = forwarded.split(":")[0];
+        } else {
+            addr = socket.handshake.address;
+        }
         room = room.toUpperCase();
-        console.log("New incoming GAME connection from " + socket.id + " (" + room + ")");
+        room = generateAnonymousRoomCode(addr + room);
+
+        console.log("New incoming GAME connection from " + socket.id + ", room " + room + " [" + addr + "]");
+
         socket.join(room);
         socket.emit("joinedroom", room);
         socket.room = room;
@@ -96,8 +133,10 @@ socketServer.on("connection", (socket) => {
     });
 
     function setAllClientsCoins(coins) {
-        for (let i = 0; i < gameClients[socket.room].length; i++) {
-            gameClients[socket.room][i].coins = coins;
+        if (gameClients[socket.room]) {
+            for (let i = 0; i < gameClients[socket.room].length; i++) {
+                gameClients[socket.room][i].coins = coins;
+            }
         }
     }
 
@@ -133,7 +172,9 @@ socketServer.on("connection", (socket) => {
         let ourClientIndex = gameClients[socket.room].findIndex(e => e.ids.includes(client));
         let ourClientData = gameClients[socket.room][ourClientIndex];
         if (result) {
-            ourClientData.coins -= gameData[socket.room].prices[ourClientData.placing];
+            if (gameData[socket.room].unlimitedCoins) {
+                ourClientData.coins -= gameData[socket.room].prices[ourClientData.placing];
+            }
             ourClientData.cooldown = new Date().getTime() + (cooldown * 1000);
             for (const clientSocket of ourClientData.sockets) {
                 clientSocket.emit("setCoins", ourClientData.coins);
@@ -152,20 +193,24 @@ socketServer.on("connection", (socket) => {
         webSockets.to(socket.room).emit("canPlaceItems", canPlaceItems);
     });
 
-    socket.on("setCoinSettings", (minCoins, totalCoins, minPrice, maxPrice, unlimitedCoins) => {
+    socket.on("setCoinSettings", (minCoins, totalCoins, minPrice, maxPrice, unlimitedCoins, coinsPerRound) => {
         gameData[socket.room].coinSettings.minCoins = minCoins;
         gameData[socket.room].coinSettings.totalCoins = totalCoins;
         gameData[socket.room].coinSettings.minPrice = minPrice;
         gameData[socket.room].coinSettings.maxPrice = maxPrice;
         gameData[socket.room].coinSettings.unlimitedCoins = unlimitedCoins;
+        gameData[socket.room].coinSettings.coinsPerRound = coinsPerRound;
 
-        gameData[socket.room].coinsPerClient = minCoins * 2.5;
-
-        for (const index in gameClients[socket.room]) {
-            if (gameClients[socket.room][index].coins == null) {
-                gameClients[socket.room][index].coins = minCoins;
+        let coins = -1;
+        if (!gameData[socket.room].unlimitedCoins) {
+            if (!gameClients[socket.room] || gameClients[socket.room].length <= 0) {
+                coins = gameData[socket.room].coinSettings.totalCoins;
+            } else {
+                coins = Math.ceil(Math.max(gameData[socket.room].coinSettings.minCoins, gameData[socket.room].coinSettings.totalCoins / gameClients[socket.room].length));
             }
         }
+        setAllClientsCoins(coins);
+        webSockets.to(socket.room).emit("setCoins", coins);
     });
 
     socket.on("setPrices", (weights, minWeight, maxWeight) => {
@@ -185,12 +230,25 @@ socketServer.on("connection", (socket) => {
 
         webSockets.to(socket.room).emit("setPrices", gameData[socket.room].prices);
     });
+
+    socket.on("toEditMode", () => {
+        // Grant additional coins...
+        for (let i = 0; i < gameClients[socket.room].length; i++) {
+            gameClients[socket.room][i].coins += gameData[socket.room].coinSettings.coinsPerRound;
+            for (const clientSocket of gameClients[socket.room][i].sockets) {
+                clientSocket.emit("setCoins", gameClients[socket.room][i].coins);
+            }
+        }
+    });
 });
 
 webSockets.on("connection", (socket) => {
-    let addr = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address;
-    addr = addr.split(":")[0];
-    socket.ipaddress = addr
+    let forwarded = socket.handshake.headers['x-forwarded-for']
+    if (forwarded) {
+        socket.ipaddress = forwarded.split(":")[0];
+    } else {
+        socket.ipaddress = socket.handshake.address;
+    }
     console.log("New incoming CLIENT connection from " + socket.id + " IP " + socket.ipaddress);
 
     socket.on("join", (room) => {
@@ -232,11 +290,13 @@ webSockets.on("connection", (socket) => {
 
         socket.emit("setCoins", gameClients[room][ourRoomDataIndex].coins)
         socket.emit("setCooldown", gameClients[room][ourRoomDataIndex].cooldown);
+        webSockets.to(socket.room).emit("updateConnectedUsers", gameClients[socket.room].length);
     });
 
     socket.on("disconnect", () => {
         if (gameData[socket.room]) {
             gameClients[socket.room] = gameClients[socket.room].filter(c => c.socket != socket);
+            socketServer.to(socket.room).emit("updateConnectedUsers", gameClients[socket.room].length);
         }
     });
 
