@@ -8,8 +8,7 @@ A crowd control mod for Ultimate Chicken Horse!
 > But doesn't UCH already have the Twitch integration mode?
 
 Yes! But it's not that interactive! This is better!
-This mod allows users to place items using the website (or your own, if
-you wish to self-host...)
+This mod allows users to place items using the website (or your own, if you wish to self-host...)
 
 # Using the mod
 ### How to host a game
@@ -57,6 +56,8 @@ In placement mode, the controls are:
 * Scroll wheel or [Q]/[E]: rotate or flip the item (mirrors on how the object flips/rotates in UCH)
 * Shift key: hold to change the rotation / flip mode for the item (mirrors on how the object flips/rotates in UCH) 
 
+For mobile users, there are rotation / flip / confirm / cancel buttons on the bottom left of the screen. 
+
 After placing objects, you will be given a certain cooldown (configurable by the host), which you must wait util placing another item.
 You will also be unable to place items while the in-game players are not in build mode (configurable by the host)
 
@@ -66,10 +67,9 @@ Glossary:
 * "Client" = A player who joined the game *inside of UCH*.
 * "Viewer" = A player who connected to the *website* and can *only* place objects.
 
-* Clients who join without the mod cannot see items placed by viewers.
+* Clients who join without the mod cannot see (or interact with) items placed by viewers.
 * Viewers cannot see the breakable blocks within the map "Crumbling Bridge".
 * Viewers cannot see the added blocks within the map "Mainframe".
 * Viewers will sometimes have objects de-synchronize, such as the Ferris Wheel.
 * Clients will sometimes lose their ability to place items, or will sometimes see a creative mode cursor by mistake. (They cannot access an inventory, however).
-* Viewers are unable to purchase items outside of Party mode (they will display as "null" coins).
-* Viewers who are unable to scroll (no scroll wheel on mouse, mobile devices) cannot rotate items. 
+* Viewers are unable to purchase items outside of Party mode (they will display as "null" coins). 
