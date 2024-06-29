@@ -1,5 +1,7 @@
 const roomField = document.getElementById("roomIdField");
 const submitButton = document.getElementById("roomIdSubmit");
+const previewControls = document.getElementById("previewControls");
+const previewBox = document.getElementById("previewBox");
 
 function joinRoom(code) {
 	if (/^[a-zA-Z]{6}$/.test(roomField.value)) {
@@ -598,12 +600,14 @@ function updateItemShop(itemShop) {
 		itemShop.button.disabled = false;
 	}
 
-	if (getItemPrice(obj) == null) {
+	let price = getItemPrice(obj)
+	price = 0
+	if (price == null) {
 		// Disable the button
 		itemShop.button.disabled = true;
 	} else {
 		// Enable if we have enough coins
-		itemShop.button.disabled = coins < getItemPrice(obj);
+		itemShop.button.disabled = coins < price;
 	}
 
 	let imageName = itemShop.item;
@@ -618,7 +622,7 @@ function updateItemShop(itemShop) {
 		itemShop.image.style.marginBottom = -info.shopCrop[1] + "px";
 	}
 
-	itemShop.button.childNodes[0].innerHTML = "" + getItemPrice(obj);
+	itemShop.button.childNodes[0].innerHTML = price.toString();
 }
 
 const categoryTemplate = document.getElementById("categoryTemplate");
@@ -678,6 +682,11 @@ function getItemCategory(name) {
 }
 
 function updateAllItemShopVisibility() {
+
+	for (const itemShop of itemShops) {
+		updateItemShop(itemShop);
+	}
+
 	let validCategories = [];
 	for (const itemShop of itemShops) {
 		if (purchasableOnly) {
@@ -704,11 +713,51 @@ function updateAllItemShopVisibility() {
 	}
 }
 
+function confirmItemPlacement() {
+	if (!itemPlacement || itemPlacement.submitted) {
+		return;
+	}
+
+	itemPlacement.submitted = true;
+
+	socket.emit("placeItem", itemPlacement.obj, itemPlacement.coords[0], itemPlacement.coords[1],
+		itemPlacement.rotation, itemPlacement.scale[0] < 0, itemPlacement.scale[1] < 0);
+}
+
+function rotateItem(clockwise) {
+	if (!canDoAction(objectInfo[itemPlacement.obj], "rotate")) {
+		return;
+	}
+
+	if (clockwise) {
+		itemPlacement.rotation -= 90;
+	} else {
+		itemPlacement.rotation += 90;
+	}
+	itemPlacement.rotation += 360;
+	itemPlacement.rotation %= 360;
+	updateItemPlacement();
+}
+
+function flipItem() {
+	if (!canDoAction(objectInfo[itemPlacement.obj], "flipX")) {
+		return;
+	}
+
+	itemPlacement.scale[0] *= -1;
+	updateItemPlacement();
+}
+
 function endItemPlacement() {
 	if (itemPlacement) {
 		itemPlacement.image.remove();
 		itemPlacement = null;
+		previewControls.classList.add("hidden");
 	}
+}
+
+function canDoAction(obj, action) {
+	return obj.scrollAction == action || obj.scrollShiftAction == action;
 }
 
 function buyItem(obj) {
@@ -746,25 +795,43 @@ function buyItem(obj) {
 		}
 	}
 
+	let rect = bg.getBoundingClientRect();
 	itemPlacement = {
 		"obj": obj,
 		"image": image,
-		"coords": [0,0],
+		"mouse": [rect.x + rect.width / 2, rect.y + rect.height / 2],
+		"coords": [0, 0],
 		"rotation": 0,
 		"scale": [1,1],
 	};
+	previewControls.classList.remove("hidden");
+
+	if (!canDoAction(objectInfo[obj], "rotate")) {
+		document.getElementById("rotateCC").classList.add("hidden");
+		document.getElementById("rotateC").classList.add("hidden");
+	} else {
+		document.getElementById("rotateCC").classList.remove("hidden");
+		document.getElementById("rotateC").classList.remove("hidden");
+	}
+	if (!canDoAction(objectInfo[obj], "flipX")) {
+		document.getElementById("flipX").classList.add("hidden");
+	} else {
+		document.getElementById("flipX").classList.remove("hidden");
+	}
 }
 
 
-let lastMousePosition = [0, 0];
+let mousePosition = [0, 0];
 function updateItemPlacement() {
 	if (!itemPlacement || itemPlacement.submitted) {
 		return;
 	}
 	const bounds = bg.getBoundingClientRect();
 	const deg2Rad = Math.PI / 180;
-	let x = Math.max(0, Math.min(1, (lastMousePosition[0] - bounds.left) / bounds.width));
-	let y = Math.max(0, Math.min(1, (lastMousePosition[1] - bounds.top) / bounds.height));
+	let x = Math.max(0, Math.min(1, (mousePosition[0] - bounds.left) / bounds.width));
+	let y = Math.max(0, Math.min(1, (mousePosition[1] - bounds.top) / bounds.height));
+	itemPlacement.mouse[0] = mousePosition[0];
+	itemPlacement.mouse[1] = mousePosition[1];
 
 	const level = levelInfo[currentLevel];
 	const objInfo = objectInfo[itemPlacement.obj];
@@ -797,6 +864,9 @@ function updateItemPlacement() {
 			offset[0] += override[rot][0];
 			offset[1] += override[rot][1];
 		}
+
+		offset[0] = Math.round(offset[0]);
+		offset[1] = Math.round(offset[1]);
 	}
 
 	x += ((offset[0] - 0.5) * level.scale) / 2560;
@@ -818,7 +888,6 @@ function updateItemPlacement() {
 	let visualX = snapX + (offset[0] % 0.5) * level.scale / 2560;
 	let visualY = snapY + (offset[1] % 0.5) * level.scale / 1409;
 
-
 	itemPlacement.coords = [
 		(visualX * 2560 - level.pixelOrigin[0]) / level.scale + level.coordOrigin[0] - offset[0],
 		-(visualY * 1409 - level.pixelOrigin[1]) / level.scale + level.coordOrigin[1] + offset[1],
@@ -835,19 +904,100 @@ function updateItemPlacement() {
 	image.style.transform = "rotate(" + -rot + "deg) scale(" + scale[0] + "," + scale[1] + ")";
 }
 
+
 const bg = document.getElementById("wrapper");
-document.body.onpointermove = (event) => {
+let touchOrigin = [1300, 250];
+let touchInputs = 0;
+document.ontouchstart = (event) => {
+	touchInputs++;
+	if (touchInputs > 1) {
+		return;
+	}
+	if (itemPlacement) {
+		mousePosition[0] = itemPlacement.mouse[0];
+		mousePosition[1] = itemPlacement.mouse[1];
+	}
+	touchOrigin[0] = event.touches[0].clientX;
+	touchOrigin[1] = event.touches[0].clientY;
+}
+document.ontouchend = (event) => {
+	touchInputs--;
+}
+bg.ontouchmove = (event) => {
+	mousePosition[0] += (event.touches[0].clientX - touchOrigin[0]);
+	mousePosition[1] += (event.touches[0].clientY - touchOrigin[1]);
+
+	let rect = bg.getBoundingClientRect();
+	if (mousePosition[0] < rect.x) {
+		mousePosition[0] = rect.x;
+	} else if (mousePosition[0] > rect.x + rect.width) {
+		mousePosition[0] = rect.x + rect.width;
+	}
+	if (mousePosition[1] < rect.y) {
+		mousePosition[1] = rect.y;
+	} else if (mousePosition[1] > rect.y + rect.height) {
+		mousePosition[1] = rect.y + rect.height;
+	}
+
+	touchOrigin[0] = event.touches[0].clientX;
+	touchOrigin[1] = event.touches[0].clientY;
+
+	updateItemPlacement();
+}
+document.onpointermove = (event) => {
 	const { clientX, clientY } = event;
-	lastMousePosition = [clientX, clientY];
+	if (touchInputs > 0) {
+		return;
+	}
+	let rect = bg.getBoundingClientRect();
+	if (clientX < rect.x || clientX > rect.x + rect.width ||
+		clientY < rect.y || clientY > rect.y + rect.height) {
+		return
+	}
+	mousePosition = [clientX, clientY];
+
 	updateItemPlacement();
 };
-document.body.oncontextmenu = () => {
+document.body.oncontextmenu = (event) => {
+	event.preventDefault();
+
 	if (!itemPlacement || itemPlacement.submitted) {
 		return true;
 	}
 
 	endItemPlacement();
 	return false;
+}
+document.addEventListener('gesturestart', function (e) {
+	e.preventDefault();
+});
+document.onkeydown = (event) => {
+	if (event.key != 'q' & event.key != 'e') {
+		return;
+	}
+	if (!itemPlacement || itemPlacement.submitted) {
+		return;
+	}
+
+	function performAction(str) {
+		switch (str) {
+			case "rotate": {
+				rotateItem(event.key == 'e');
+				break;
+			}
+			case "flipX": {
+				flipItem();
+				break;
+			}
+		}
+	}
+
+	const objData = objectInfo[itemPlacement.obj];
+	if (event.shiftKey && objData.scrollShiftAction) {
+		performAction(objData.scrollShiftAction);
+	} else {
+		performAction(objData.scrollAction);
+	}
 }
 bg.onwheel = (event) => {
 	if (!itemPlacement || itemPlacement.submitted) {
@@ -857,23 +1007,14 @@ bg.onwheel = (event) => {
 	function performAction(str) {
 		switch (str) {
 			case "rotate": {
-				if (event.deltaY < 0) {
-					// Clockwise
-					itemPlacement.rotation -= 90;
-				} else {
-					// Counterclockwise
-					itemPlacement.rotation += 90;
-				}
-				itemPlacement.rotation += 360;
-				itemPlacement.rotation %= 360;
+				rotateItem(event.deltaY < 0);
 				break;
 			}
 			case "flipX": {
-				itemPlacement.scale[0] *= -1;
+				flipItem();
 				break;
 			}
 		}
-		updateItemPlacement();
 	}
 
 	const objData = objectInfo[itemPlacement.obj];
@@ -884,14 +1025,7 @@ bg.onwheel = (event) => {
 	}
 }
 bg.onclick = () => {
-	if (!itemPlacement || itemPlacement.submitted) {
-		return;
-	}
-
-	itemPlacement.submitted = true;
-
-	socket.emit("placeItem", itemPlacement.obj, itemPlacement.coords[0], itemPlacement.coords[1],
-		itemPlacement.rotation, itemPlacement.scale[0] < 0, itemPlacement.scale[1] < 0);
+	confirmItemPlacement();
 }
 
 function getItemPrice(obj) {
@@ -931,13 +1065,13 @@ function showPage(page) {
 let canPlaceItems = false;
 let cooldownTimer = 0;
 let countdownInterval = null;
+let connected = false;
 
 function updateCantBuildText() {
-
 	const overlay = document.getElementById("cannotPlaceItems");
 	const warning = document.getElementById("cannotPlaceItemsTimer");
 
-	if (canPlaceItems && new Date().getTime() >= cooldownTimer) {
+	if (canPlaceItems && new Date().getTime() >= cooldownTimer && connected) {
 		overlay.classList.add("hidden");
 
 		if (countdownInterval) {
@@ -946,7 +1080,12 @@ function updateCantBuildText() {
 		return;
 	}
 
+
 	overlay.classList.remove("hidden");
+	if (!connected) {
+		warning.innerText = "Lost connection to the server. Trying to reconnect...";
+		return;
+	}
 	warning.innerText = "You cannot place items right now!";
 	if (new Date().getTime() < cooldownTimer) {
 		warning.innerText += " (" + Math.floor((cooldownTimer - new Date().getTime()) / 1000) + "s)";
@@ -960,6 +1099,13 @@ function connectToRoom(room) {
 	socket.on("connect", () => {
 		console.log("Connected to the webserver");
 		socket.emit("join", room);
+		connected = true;
+		updateCantBuildText();
+	});
+
+	socket.on("disconnect", () => {
+		connected = false;
+		updateCantBuildText();
 	});
 
 	socket.on("joinedroom", (roomHasHost) => {
@@ -1069,7 +1215,6 @@ function updatePlaceable(serializedObj) {
 				if (possibleObj.alternateNames) {
 					if (possibleObj.alternateNames.includes(validName)) {
 						validName = possibleObjName;
-						console.log(validName);
 						break;
 					}
 				}
@@ -1243,6 +1388,32 @@ function updateAllPlaceables(objects) {
 	for (const obj of objects) {
 		updatePlaceable(obj);
 	}
+}
+
+const sidepanel = document.getElementById("itemSidepanel");
+let open = false;
+
+function toggleItemPanel() {
+	if (open) {
+		closeItemPanel();
+	} else {
+		openItemPanel();
+	}
+}
+function openItemPanel() {
+	sidepanel.style.transform = "translateX(0px)";
+	document.getElementById("sidepanelOpen").innerHTML = "&#xBB;";
+	open = true;
+}
+function closeItemPanel() {
+	sidepanel.style.transform = "translateX(100%) translateX(-50px)";
+	document.getElementById("sidepanelOpen").innerHTML = "&#xAB;";
+	open = false;
+}
+
+if (!window.matchMedia("(pointer: coarse)").matches) {
+	document.getElementById("place").classList.add("hidden");
+	//document.getElementById("cancel").classList.add("hidden");
 }
 
 if (instaJoinRoom && /^[a-zA-Z]{6}$/.test(instaJoinRoom)) {

@@ -294,6 +294,7 @@ webSockets.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
+        console.log("CLIENT disconnected " + socket.id + " IP " + socket.ipaddress + ", was in " + socket.room);
         if (gameData[socket.room]) {
             gameClients[socket.room] = gameClients[socket.room].filter(c => c.socket != socket);
             socketServer.to(socket.room).emit("updateConnectedUsers", gameClients[socket.room].length);

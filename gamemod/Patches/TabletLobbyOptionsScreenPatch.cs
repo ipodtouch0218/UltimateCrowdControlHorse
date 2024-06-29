@@ -7,8 +7,8 @@ namespace UltimateCrowdControlHorse.Patches {
     [HarmonyPatch(typeof(TabletLobbyOptionsScreen))]
     internal class TabletLobbyOptionsScreenPatch {
 
-        private static bool crowdControlUrlShown;
-        private static Text crowdControlUrlText, urlHintText;
+        public static bool crowdControlUrlShown;
+        public static Text crowdControlUrlText, urlHintText;
         private static RectTransform inviteGroup, freezeGroup;
         private static RectTransform urlRectTransform;
         private static Vector2 urlOriginalAnchorMin, urlOriginalAnchorMax;
@@ -49,6 +49,7 @@ namespace UltimateCrowdControlHorse.Patches {
             RectTransform freezeText = freezeGroup.GetChild(0).GetComponent<RectTransform>();
             freezeText.offsetMin += Vector2.up * 10;
 
+            crowdControlUrlShown = false;
             OnTransitionInBegin_Postfix(__instance);
         }
 
@@ -62,14 +63,12 @@ namespace UltimateCrowdControlHorse.Patches {
             }
         }
 
-        public static void PrintChildren(Transform transform, int depth) {
-            CrowdControlMod.Instance.log.LogInfo(new string('-', depth * 2) + " " + transform.name);
-            for (int i = 0; i < transform.childCount; i++) {
-                PrintChildren(transform.GetChild(i), depth + 1);
-            }
-        }
-
         public static void CopyCrowdControlUrl(PickCursor cursor) {
+            if (CrowdControlMod.Instance.room == null) {
+                UserMessageManager.Instance.UserMessage("Not connected to the Crowd Control server!", 2f, UserMessageManager.UserMsgPriority.hi, tiedToCurrentScene: true);
+                return;
+            }
+
             string url = CrowdControlMod.webserverUrl.Value;
             if (!url.EndsWith("/")) {
                 url += "/";
@@ -89,12 +88,17 @@ namespace UltimateCrowdControlHorse.Patches {
                 AkSoundEngine.PostEvent("UI_UPad_Online_Lobby_Code_Hide", cursor.gameObject);
             } else {
                 // Show
-                string url = CrowdControlMod.webserverUrl.Value;
-                if (!url.EndsWith("/")) {
-                    url += "/";
+                string msg;
+                if (CrowdControlMod.Instance.room != null) {
+                    msg = CrowdControlMod.webserverUrl.Value;
+                    if (!msg.EndsWith("/")) {
+                        msg += "/";
+                    }
+                    msg += CrowdControlMod.Instance.room;
+                } else {
+                    msg = "Not currently connected...";
                 }
-                url += CrowdControlMod.Instance.room;
-                crowdControlUrlText.text = url;
+                crowdControlUrlText.text = msg;
                 crowdControlUrlText.fontSize = 42;
                 urlRectTransform.anchorMin += Vector2.left * 0.3f;
                 urlRectTransform.anchorMax += Vector2.right * 0.2f;

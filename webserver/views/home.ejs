@@ -12,7 +12,7 @@
 					<i class="fa-solid fa-user"></i>
 					<span id="connectionInfo">X</span>
 				</span>
-				<img src="/ui/Logo.png" style="height: 50px;" />
+				<img src="/ui/Logo.png" />
 			</div>
 			<div class="page-content">
 				<div id="pageJoinRoom" class="container">
@@ -51,13 +51,11 @@
 						<button id="sidepanelOpen" class="openbtn togglebutton" onclick="toggleItemPanel()">&#xAB;</button>
 						<div class="content">
 							<div class="header">
-								<p>
+								<span>
 									<span id="coin-count">1000</span>
 									<i class="fa-solid fa-coins"></i>
-								</p>
-								<span>
-									<button id="show-purchasableOnly" onclick="togglePurchasableOnly()">Purchasable Only</button>
 								</span>
+								<button id="show-purchasableOnly" onclick="togglePurchasableOnly()">Purchasable Only</button>
 							</div>
 							<div class="items">
 								<p id="categoryTemplate" class="label hidden">Category</p>
@@ -69,36 +67,20 @@
 							</div>
 						</div>
 					</div>
+					<div id="previewControls" class="box hidden">
+						<button id="place" title="Confirm Placement" class="openbtn confirm" onclick="confirmItemPlacement()"><i class="fa-solid fa-check"></i></button>
+						<button id="rotateCC" title="Rotate Counter-Clockwise" class="openbtn" onclick="rotateItem(false)"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+						<button id="flipX" title="Horizontal Flip" class="openbtn" onclick="flipItem()"><i class="fa-solid fa-arrows-left-right"></i></button>
+						<button id="rotateC" title="Rotate Clockwise" class="openbtn" onclick="rotateItem(true)"><i class="fa-solid fa-arrow-rotate-right"></i></button>
+						<button id="cancel" title="Cancel Placement" class="openbtn cancel" onclick="endItemPlacement()"><i class="fa-solid fa-xmark"></i></button>
+					</div>
 				</div>
 			</div>
 			<div class="page-footer">
-				<span>Made by <a href="https://github.com/ipodtouch0218" target=”_blank”>ipodtouch0218</a>, Logo design by <a href="https://twitter.com/TheBluePixeling" target=”_blank”>TheBluePixeling</a></span>
+				<span>Made by <a href="https://github.com/ipodtouch0218" target="_blank">ipodtouch0218</a>, Logo design by <a href="https://twitter.com/TheBluePixeling" target="_blank">TheBluePixeling</a></span>
 				<span class="right-aligned">Source code available <a href="https://github.com/ipodtouch0218/UltimateCrowdControlHorse" target=”_blank”>on GitHub</a></span>
 			</div>
 		</div>
-
-		<script>
-			const sidepanel = document.getElementById("itemSidepanel");
-			let open = false;
-
-			function toggleItemPanel() {
-				if (open) {
-					closeItemPanel();
-				} else {
-					openItemPanel();
-				}
-			}
-			function openItemPanel() {
-				sidepanel.style.transform = "translateX(0px)";
-				document.getElementById("sidepanelOpen").innerHTML = "&#xBB;";
-				open = true;
-			}
-			function closeItemPanel() {
-				sidepanel.style.transform = "translateX(100%) translateX(-50px)";
-				document.getElementById("sidepanelOpen").innerHTML = "&#xAB;";
-				open = false;
-			}
-		</script>
 
 		<script>instaJoinRoom="<%- locals.room %>"</script>
 		<script src="/logic.js"></script>

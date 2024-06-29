@@ -141,7 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Patches\GameControlPatch.cs" />
-    <Compile Include="Patches\InventoryPagePatch.cs" />
+    <Compile Include="Patches\TabletLobbyOptionsScreenPatch.cs" />
     <Compile Include="Patches\LobbyManagerPatch.cs" />
     <Compile Include="Patches\NetworkLobbyManagerPatch.cs" />
     <Compile Include="Patches\PlaceableMetadataListPatch.cs" />

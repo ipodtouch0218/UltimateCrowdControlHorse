@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 namespace UltimateCrowdControlHorse {
-    [BepInPlugin(modGUID, "Ultimate Crowd Control Horse", "0.0.1")]
+    [BepInPlugin(modGUID, "Ultimate Crowd Control Horse", "1.1.0")]
     public class CrowdControlMod : BaseUnityPlugin {
 
         private const string modGUID = "ipodtouch0218.UccH";
@@ -48,7 +48,6 @@ namespace UltimateCrowdControlHorse {
 
         private SocketIOUnity socket;
         private string currentLevel;
-        private string roomId;
         private bool inEditMode;
 
 
@@ -107,9 +106,23 @@ namespace UltimateCrowdControlHorse {
                 SendSocketMessage("setCoinSettings", minCoins.Value, totalCoins.Value, minPrice.Value, maxPrice.Value, unlimitedCoins.Value, additionalCoinsPerRound.Value);
                 UpdatePlaceableSpawnChances();
                 PlaceablePatch.UpdateAllPlaceables();
+
+                if (TabletLobbyOptionsScreenPatch.crowdControlUrlText && TabletLobbyOptionsScreenPatch.crowdControlUrlShown) {
+                    string url = webserverUrl.Value;
+                    if (!url.EndsWith("/")) {
+                        url += "/";
+                    }
+                    url += room;
+                    TabletLobbyOptionsScreenPatch.crowdControlUrlText.text = url;
+                }
             };
             socket.OnDisconnected += (sender, reason) => {
                 log.LogInfo("[SOCKET] Disconnected from the UccH webserver");
+                room = null;
+
+                if (TabletLobbyOptionsScreenPatch.crowdControlUrlText && TabletLobbyOptionsScreenPatch.crowdControlUrlShown) {
+                    TabletLobbyOptionsScreenPatch.crowdControlUrlText.text = "Not currently connected...";
+                }
             };
 
             socket.OnUnityThread("placeItem", (response) => {
